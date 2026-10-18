@@ -339,8 +339,19 @@ npm run test
 # Run code linter
 npm run lint
 
-# Compile production bundle
+# Compile production bundle and prerender all static SPA pages into dist/
 npm run build
 ```
+
+---
+
+## 6. cPanel Static SPA Deployment Architecture
+
+- **Domain**: `demo.urbancraftgifts.com`
+- **GitHub Repository**: `https://github.com/shellinfosec/urbancraft-demo` (`main` branch)
+- **Deployment Mode**: Pure Static SPA on Apache (`dist/` folder) without Phusion Passenger or Node.js runtime overhead.
+- **Prerender Pipeline**: `npm run build` runs `vite build` followed by `scripts/prerender-spa.mjs`, which prerenders 29+ static routes (`/`, `/catalogue`, `/products`, `/categories/*`, etc.) and packages them into `dist/` along with `dist/.htaccess` and all asset bundles.
+- **cPanel Deployment**: `.cpanel.yml` deploys the committed `dist/` folder to `/home/urbancraftgifts/demo.urbancraftgifts.com` via `/bin/cp -R dist/. $DEPLOYPATH/`.
+- **Apache Rewrite**: `dist/.htaccess` routes existing files/directories directly and fallbacks all client routes to `/index.html` for instant TanStack Router hydration.
 
 This file serves as the definitive reference for the Urban Craft & Co. architecture, component relationships, data flow, and codebase conventions.
