@@ -83,20 +83,14 @@ async function run() {
 
       if (route === "/") {
         fs.writeFileSync(path.join(distDir, "index.html"), html, "utf-8");
-        fs.writeFileSync(path.join(outputPublicDir, "index.html"), html, "utf-8");
         console.log(`  ✓ Prerendered / -> dist/index.html`);
       } else {
         const routeClean = route.replace(/^\/+/, "");
         const targetDirDist = path.join(distDir, routeClean);
-        const targetDirOut = path.join(outputPublicDir, routeClean);
 
         fs.mkdirSync(targetDirDist, { recursive: true });
-        fs.mkdirSync(targetDirOut, { recursive: true });
-
         fs.writeFileSync(path.join(targetDirDist, "index.html"), html, "utf-8");
         fs.writeFileSync(path.join(distDir, `${routeClean}.html`), html, "utf-8");
-        fs.writeFileSync(path.join(targetDirOut, "index.html"), html, "utf-8");
-        fs.writeFileSync(path.join(outputPublicDir, `${routeClean}.html`), html, "utf-8");
         console.log(`  ✓ Prerendered ${route} -> dist/${routeClean}/index.html & ${routeClean}.html`);
       }
     } catch (err) {
@@ -107,8 +101,7 @@ async function run() {
   const htaccessSrc = path.join(rootDir, "public/.htaccess");
   if (fs.existsSync(htaccessSrc)) {
     fs.copyFileSync(htaccessSrc, path.join(distDir, ".htaccess"));
-    fs.copyFileSync(htaccessSrc, path.join(outputPublicDir, ".htaccess"));
-    console.log("  ✓ Copied public/.htaccess to dist/.htaccess & .output/public/.htaccess");
+    console.log("  ✓ Copied public/.htaccess to dist/.htaccess");
   }
 
   console.log("✨ All routes and static assets successfully prepared in dist/ for cPanel deployment!");
