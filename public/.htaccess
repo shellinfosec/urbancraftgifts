@@ -1,0 +1,45 @@
+# Apache configuration for Urban Craft & Co. (SPA & Prerendered Routes)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Disable directory index browsing
+  Options -Indexes
+
+  # Serve existing files and directories directly (e.g. assets, pdfs, images)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # If an html file exists matching the exact path (e.g. /catalogue -> /catalogue.html)
+  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+  RewriteRule ^(.*)$ $1.html [L]
+
+  # Route all non-file traffic to index.html for client-side SPA routing
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Security & Compression Headers
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # Static assets aggressive caching (1 year)
+  <FilesMatch "\.(ico|pdf|jpg|jpeg|png|gif|webp|svg|css|js|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "max-age=31536000, public, immutable"
+  </FilesMatch>
+
+  # HTML & webmanifest short cache / revalidate
+  <FilesMatch "\.(html|webmanifest|json)$">
+    Header set Cache-Control "max-age=0, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# Standard MIME Types
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+  AddType image/webp .webp
+  AddType image/svg+xml .svg
+  AddType application/pdf .pdf
+</IfModule>

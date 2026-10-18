@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/urbancraftgifts/demo.urbancraftgifts.com
+    - /bin/cp -R dist/. $DEPLOYPATH/
