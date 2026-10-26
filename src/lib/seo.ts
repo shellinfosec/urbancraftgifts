@@ -56,6 +56,12 @@ export function localBusinessJsonLd() {
       email: BUSINESS.email,
       telephone: BUSINESS.phoneE164,
       openingHours: BUSINESS.hoursSchema,
+      hasMap: BUSINESS.mapLinkUrl,
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: BUSINESS.coordinates.lat,
+        longitude: BUSINESS.coordinates.lng,
+      },
       address: {
         "@type": "PostalAddress",
         streetAddress: BUSINESS.address.street,

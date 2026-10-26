@@ -13,7 +13,7 @@ export const Route = createFileRoute("/contact")({
   head: () =>
     pageHead({
       title: "Contact Us",
-      description: `Contact Urban Craft & Co. in Paharganj, New Delhi. Call or WhatsApp ${BUSINESS.phoneDisplay} or email ${BUSINESS.email}.`,
+      description: `Contact Urban Craft & Co. in Sadar Bazar, New Delhi. Call or WhatsApp ${BUSINESS.phoneDisplay} or email ${BUSINESS.email}.`,
       path: "/contact",
     }),
   component: ContactPage,
@@ -35,7 +35,13 @@ function ContactPage() {
       href: whatsappUrl({ kind: "general" }),
     },
     { icon: Mail, label: "Email", value: BUSINESS.email, href: `mailto:${BUSINESS.email}` },
-    { icon: MapPin, label: "Address", value: BUSINESS.addressLine, href: BUSINESS.mapLinkUrl },
+    {
+      icon: MapPin,
+      label: "Address",
+      value: BUSINESS.addressLine,
+      subvalue: `Plus code: ${BUSINESS.plusCode}`,
+      href: BUSINESS.mapLinkUrl,
+    },
     { icon: Clock, label: "Hours", value: BUSINESS.hours },
   ];
   return (
@@ -44,7 +50,7 @@ function ContactPage() {
       <section className="container-site grid gap-8 pb-20 lg:grid-cols-[1fr_1.2fr]">
         <div className="rounded-3xl border border-border bg-card p-6 md:p-8">
           <ul className="space-y-5">
-            {rows.map(({ icon: Icon, label, value, href }) => (
+            {rows.map(({ icon: Icon, label, value, subvalue, href }) => (
               <li key={label} className="flex gap-4">
                 <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sand text-olive">
                   <Icon className="size-5" />
@@ -65,6 +71,9 @@ function ContactPage() {
                   ) : (
                     <span className="font-medium text-olive">{value}</span>
                   )}
+                  {subvalue ? (
+                    <span className="mt-1 block text-xs text-muted-foreground">{subvalue}</span>
+                  ) : null}
                 </span>
               </li>
             ))}

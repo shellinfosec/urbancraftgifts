@@ -91,7 +91,9 @@ async function run() {
         fs.mkdirSync(targetDirDist, { recursive: true });
         fs.writeFileSync(path.join(targetDirDist, "index.html"), html, "utf-8");
         fs.writeFileSync(path.join(distDir, `${routeClean}.html`), html, "utf-8");
-        console.log(`  ✓ Prerendered ${route} -> dist/${routeClean}/index.html & ${routeClean}.html`);
+        console.log(
+          `  ✓ Prerendered ${route} -> dist/${routeClean}/index.html & ${routeClean}.html`,
+        );
       }
     } catch (err) {
       console.error(`❌ Error rendering route ${route}:`, err);
@@ -104,7 +106,9 @@ async function run() {
     console.log("  ✓ Copied public/.htaccess to dist/.htaccess");
   }
 
-  console.log("✨ All routes and static assets successfully prepared in dist/ for cPanel deployment!");
+  console.log(
+    "✨ All routes and static assets successfully prepared in dist/ for cPanel deployment!",
+  );
   process.exit(0);
 }
 

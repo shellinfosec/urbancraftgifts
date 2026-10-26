@@ -84,7 +84,12 @@ export function SiteFooter() {
             <h2 className="eyebrow mb-5 font-sans text-gold">Visit or reach us</h2>
             <p className="flex gap-2">
               <MapPin className="mt-0.5 size-4 shrink-0" />
-              {BUSINESS.addressLine}
+              <span>
+                {BUSINESS.addressLine}
+                <span className="mt-0.5 block text-xs text-primary-foreground/75">
+                  Plus code: {BUSINESS.plusCode}
+                </span>
+              </span>
             </p>
             <p className="flex gap-2">
               <Clock className="mt-0.5 size-4 shrink-0" />

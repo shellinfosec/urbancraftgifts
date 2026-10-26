@@ -89,10 +89,11 @@ export function InlineInquiry({
                 icon: MapPin,
                 label: "Visit us",
                 value: BUSINESS.addressLine,
+                subvalue: `Plus code: ${BUSINESS.plusCode}`,
                 href: BUSINESS.mapLinkUrl,
               },
               { icon: Clock, label: "Opening hours", value: BUSINESS.hours, href: undefined },
-            ].map(({ icon: Icon, label, value, href }) => (
+            ].map(({ icon: Icon, label, value, subvalue, href }) => (
               <li key={label} className="flex items-start gap-3">
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-header-category text-brown-deep">
                   <Icon className="size-4" />
@@ -111,6 +112,9 @@ export function InlineInquiry({
                   ) : (
                     <p className="py-1 text-sm leading-relaxed text-olive">{value}</p>
                   )}
+                  {subvalue ? (
+                    <span className="block text-xs text-muted-foreground">{subvalue}</span>
+                  ) : null}
                 </div>
               </li>
             ))}

@@ -1,6 +1,6 @@
 # Urban Craft & Co. - System Architecture & Memory File
 
-> **Project Identity:** Official corporate gifting digital catalogue and inquiry platform for **Urban Craft & Co.** (Paharganj, New Delhi).  
+> **Project Identity:** Official corporate gifting digital catalogue and inquiry platform for **Urban Craft & Co.** (Sadar Bazar, New Delhi).  
 > **Core Mission:** Enable corporate HR, admin, procurement, and leadership teams to browse over 360 curated corporate gifts, customize with logos, manage shortlists, and submit guided bulk enquiries via WhatsApp or web forms.
 
 ---
@@ -86,7 +86,7 @@
 
 #### Configuration (`src/config/`)
 
-- **`src/config/business.ts`**: Canonical business data: company name ("Urban Craft & Co."), tagline, phone numbers (`+91 92661 29456`), email (`info@urbancraftgifts.com`), street address in Paharganj, New Delhi, opening hours, Google Maps embed & link URLs, Google Review link.
+- **`src/config/business.ts`**: Canonical business data: company name ("Urban Craft & Co."), tagline, phone numbers (`+91 92661 29456`), email (`info@urbancraftgifts.com`), street address in Sadar Bazar, New Delhi (Plus code `M676+4Q New Delhi, Delhi`), opening hours, Google Maps embed & link URLs, Google Review link.
 - **`src/config/brand.ts`**: Brand asset configuration:
   - `LOGO_ASSETS`: Object mapping logo variants (`horizontal`, `horizontalReversed`, `stacked`, `compactStacked`, `wordmark`, `wordmarkTagline`, `icon`, `monogram`, `outline`, `goldStacked`, `brownStacked`, `tagline`) with their dimensions and official remote URLs.
   - `HEADER_LOGO_ASSETS`: Combined icon and wordmark asset URLs for the sticky desktop header.
@@ -168,7 +168,7 @@
 - **`src/routes/categories.$slug.tsx`**: Dynamic category route `/categories/:slug`. Validates category existence via `loader` (returning 404 if invalid), renders `CategoryBanner`, filtered `CatalogView`, related category recommendations, and prefilled inquiry CTAs.
 - **`src/routes/about.tsx`**: About Us page featuring brand story, New Delhi studio location, how Urban Craft works, and company facts.
 - **`src/routes/services.tsx`**: Corporate services directory detailing gifting, onboarding, event gifts, branding, and bulk orders.
-- **`src/routes/contact.tsx`**: Contact page featuring phone, WhatsApp, email, physical Paharganj address, working hours, interactive Google Maps iframe, and `InlineInquiry` form.
+- **`src/routes/contact.tsx`**: Contact page featuring phone, WhatsApp, email, physical Sadar Bazar address with Plus code, working hours, interactive Google Maps iframe, and `InlineInquiry` form.
 - **`src/routes/faqs.tsx`**: Interactive FAQ page with sticky side navigation rail linking to grouped FAQ sections.
 - **`src/routes/testimonials.tsx`**: Client reviews page with Google Reviews link and `TestimonialsBlock`.
 - **`src/routes/favorites.tsx`**: Shortlist management page displaying saved products with one-click "Enquire about shortlist" and "Clear" actions.
