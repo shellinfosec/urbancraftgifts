@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Documentation | Urban Craft &amp; Co.</title>
+    <meta
+      name="description"
+      content="Urban Craft &amp; Co. API documentation for automated agents, integrations, and enterprise B2B gifting submissions."
+    />
+    <link rel="canonical" href="https://urbancraftgifts.com/docs/api" />
+    <style>
+      :root {
+        --bg: #faf8f5;
+        --surface: #ffffff;
+        --olive: #2f3a2e;
+        --bronze: #8c6d58;
+        --gold: #c2a268;
+        --text: #1f2421;
+        --muted: #6b7280;
+        --border: #e8e5df;
+        --code-bg: #232924;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+      }
+      .header {
+        background: var(--olive);
+        color: #faf8f5;
+        padding: 2.5rem 1.5rem;
+        border-bottom: 2px solid var(--gold);
+      }
+      .header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.8rem;
+        letter-spacing: -0.02em;
+      }
+      .header p {
+        margin: 0;
+        color: #d6d8d2;
+        font-size: 0.95rem;
+      }
+      .container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      }
+      .card h2 {
+        margin-top: 0;
+        color: var(--olive);
+        font-size: 1.3rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        background: var(--olive);
+        color: #fff;
+      }
+      .badge-get {
+        background: #059669;
+      }
+      .badge-post {
+        background: var(--olive);
+      }
+      pre {
+        background: var(--code-bg);
+        color: #faf8f5;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 0.85rem;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+      .endpoint {
+        margin-bottom: 1.5rem;
+      }
+      a {
+        color: var(--olive);
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div style="max-width: 900px; margin: 0 auto; padding: 0 1.5rem">
+        <h1>Urban Craft &amp; Co. API Documentation</h1>
+        <p>
+          RFC 9727 Service Documentation &bull; Base URL:
+          <code>https://urbancraftgifts.com/api</code>
+        </p>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="card">
+        <h2>Overview &amp; Agent Discovery</h2>
+        <p>
+          This API provides programmatic access for enterprise clients, partners, and autonomous AI
+          agents to request corporate gifting quotations, explore catalogue metadata, and verify
+          service health.
+        </p>
+        <ul>
+          <li>
+            <strong>OpenAPI Specification:</strong>
+            <a href="/.well-known/openapi.json"><code>/.well-known/openapi.json</code></a>
+          </li>
+          <li>
+            <strong>RFC 9727 API Catalog:</strong>
+            <a href="/.well-known/api-catalog"><code>/.well-known/api-catalog</code></a>
+          </li>
+          <li>
+            <strong>ARD Catalog:</strong>
+            <a href="/.well-known/ai-catalog.json"><code>/.well-known/ai-catalog.json</code></a>
+          </li>
+          <li>
+            <strong>MCP Server Card (SEP-1649):</strong>
+            <a href="/.well-known/mcp/server-card.json"
+              ><code>/.well-known/mcp/server-card.json</code></a
+            >
+          </li>
+          <li>
+            <strong>Agent Skills Index:</strong>
+            <a href="/.well-known/agent-skills/index.json"
+              ><code>/.well-known/agent-skills/index.json</code></a
+            >
+          </li>
+          <li>
+            <strong>Auth &amp; Agent Registration:</strong>
+            <a href="/auth.md"><code>/auth.md</code></a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Endpoints</h2>
+
+        <div class="endpoint">
+          <p>
+            <span class="badge badge-post">POST</span> <code>/api/contact</code> &mdash; Submit
+            Corporate Contact Enquiry
+          </p>
+          <p>
+            Receives corporate inquiry submissions with contact details, company, quantity, optional
+            target date (must not be in the past), and project scope.
+          </p>
+          <pre><code>POST /api/contact HTTP/1.1
+Host: urbancraftgifts.com
+Content-Type: application/json
+
+{
+  "name": "Priya Sharma",
+  "email": "priya@enterprise.com",
+  "phone": "+91 98765 43210",
+  "company": "Enterprise Tech India",
+  "purpose": "onboarding",
+  "quantity": "100–250",
+  "date": "2026-12-15",
+  "message": "We need custom branded onboarding gift boxes with our logo on the water bottle and leather notebook."
+}</code></pre>
+        </div>
+
+        <div class="endpoint">
+          <p>
+            <span class="badge badge-post">POST</span> <code>/api/inquire</code> &mdash; Submit
+            Detailed Gift Set Proposal Request
+          </p>
+          <p>
+            Submits a multi-step structured inquiry including selected category slugs and product
+            SKUs.
+          </p>
+        </div>
+
+        <div class="endpoint">
+          <p>
+            <span class="badge badge-get">GET</span> <code>/api/health</code> &mdash; Health Check
+          </p>
+          <p>Returns server status and Indian Standard Time (IST) heartbeat.</p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

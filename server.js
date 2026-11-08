@@ -131,7 +131,9 @@ export const log = {
 // 3. Express Application Setup & Hardening
 // ==============================================================================
 const app = express();
-const PORT = process.env.PORT || 3001;
+// cPanel Node.js Application Manager / Phusion Passenger dynamically provides process.env.PORT.
+// In production, never assign a hardcoded port number.
+const PORT = process.env.PORT || (process.env.NODE_ENV === 'production' && typeof PhusionPassenger !== 'undefined' ? 'passenger' : 3001);
 const isDev = process.env.NODE_ENV !== 'production';
 const startTime = Date.now();
 
@@ -162,7 +164,6 @@ const allowedOriginsEnv = (process.env.ALLOWED_ORIGINS || '')
 const defaultAllowedOrigins = [
   'https://urbancraftgifts.com',
   'https://www.urbancraftgifts.com',
-  'https://demo.urbancraftgifts.com',
   ...allowedOriginsEnv
 ];
 
@@ -184,8 +185,49 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'HEAD', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With', 'X-Admin-Key']
+  allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With', 'X-Admin-Key', 'CF-Connecting-IP', 'CF-IPCountry']
 }));
+
+// ==============================================================================
+// 4b. RFC 8288 Link Headers & Markdown for Agents (Content Negotiation)
+// ==============================================================================
+app.use((req, res, next) => {
+  // RFC 8288 Link headers for automated agent discovery
+  res.setHeader('Link', [
+    '</.well-known/api-catalog>; rel="api-catalog"',
+    '</.well-known/ai-catalog.json>; rel="service-desc"',
+    '</.well-known/mcp/server-card.json>; rel="mcp-server-card"',
+    '</.well-known/agent-skills/index.json>; rel="agent-skills"',
+    '</auth.md>; rel="author-doc"',
+    '</docs/api>; rel="service-doc"'
+  ].join(', '));
+
+  // Markdown for Agents content negotiation
+  const accept = req.headers.accept || '';
+  if (accept.includes('text/markdown') && req.method === 'GET' && !req.path.startsWith('/api')) {
+    const publicDir = path.join(__dirname, 'public');
+    const distDir = path.join(__dirname, 'dist');
+    const baseSlug = req.path === '/' ? 'index' : req.path.replace(/^\/+|\/+$/g, '').replace(/\.html$/, '');
+    const prospectiveMdFiles = [
+      path.join(publicDir, `${baseSlug}.md`),
+      path.join(distDir, `${baseSlug}.md`),
+      path.join(publicDir, 'index.md'),
+      path.join(distDir, 'index.md')
+    ];
+
+    for (const mdFile of prospectiveMdFiles) {
+      if (fs.existsSync(mdFile)) {
+        const content = fs.readFileSync(mdFile, 'utf8');
+        res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+        res.setHeader('x-markdown-tokens', Math.ceil(content.length / 4));
+        res.setHeader('Vary', 'Accept');
+        return res.status(200).send(content);
+      }
+    }
+  }
+
+  next();
+});
 
 // ==============================================================================
 // 5. Lightweight In-Memory Sliding Window Rate Limiter
@@ -954,6 +996,17 @@ async function handleSubmission(req, res, formType = 'inquiry') {
     });
   }
 
+  // Disallow backdated event / delivery dates
+  if (date) {
+    const todayIST = getISTISOString(now).slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date) && date < todayIST) {
+      return res.status(400).json({
+        success: false,
+        error: 'Target delivery deadline cannot be in the past.'
+      });
+    }
+  }
+
   // Device & Date formatting in IST
   const clientDevice = parseUserAgentDetails(userAgent).device;
   const submissionDate = getISTDateString(now);
@@ -1060,6 +1113,114 @@ async function handleSubmission(req, res, formType = 'inquiry') {
   });
 }
 
+// ==============================================================================
+// 12b. Agent Discovery & RFC Standards Endpoints
+// ==============================================================================
+
+// RFC 9727 API Catalog
+app.get('/.well-known/api-catalog', (req, res) => {
+  res.setHeader('Content-Type', 'application/linkset+json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', '.well-known', 'api-catalog');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  return res.json({
+    linkset: [
+      {
+        anchor: 'https://urbancraftgifts.com/api',
+        'service-desc': [{ href: 'https://urbancraftgifts.com/.well-known/openapi.json', type: 'application/json' }],
+        'service-doc': [{ href: 'https://urbancraftgifts.com/docs/api', type: 'text/html' }],
+        status: [{ href: 'https://urbancraftgifts.com/api/health', type: 'application/json' }]
+      }
+    ]
+  });
+});
+
+// ARD Manifest (Agentic Resource Discovery)
+app.get('/.well-known/ai-catalog.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', '.well-known', 'ai-catalog.json');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
+// MCP Server Card (SEP-1649)
+app.get('/.well-known/mcp/server-card.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', '.well-known', 'mcp', 'server-card.json');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
+// Agent Skills Discovery Index (RFC v0.2.0)
+app.get('/.well-known/agent-skills/index.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', '.well-known', 'agent-skills', 'index.json');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
+// OpenAPI Spec
+app.get('/.well-known/openapi.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', '.well-known', 'openapi.json');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
+// OAuth & OpenID Discovery
+app.get('/.well-known/openid-configuration', (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', '.well-known', 'openid-configuration');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
+app.get('/.well-known/oauth-authorization-server', (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', '.well-known', 'oauth-authorization-server');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
+app.get('/.well-known/oauth-protected-resource', (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', '.well-known', 'oauth-protected-resource');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
+// auth.md
+app.get('/auth.md', (req, res) => {
+  res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', 'auth.md');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
+// sitemap.xml & robots.txt
+app.get('/sitemap.xml', (req, res) => {
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const filePath = path.join(__dirname, 'public', 'sitemap.xml');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
+app.get('/robots.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  const filePath = path.join(__dirname, 'public', 'robots.txt');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).end();
+});
+
 // Route handlers
 app.post(['/api/inquire', '/api/leads'], rateLimiterMiddleware, (req, res) => {
   return handleSubmission(req, res, 'inquiry');
@@ -1092,7 +1253,7 @@ app.use((err, req, res, next) => {
 // 14. Server Bootstrapping
 // ==============================================================================
 const server = app.listen(PORT, () => {
-  log.info(`Urban Craft & Co. API Server online and listening on port ${PORT}`);
+  log.info(`Urban Craft & Co. API Server online on port/socket: ${PORT}`);
   log.info(`Process Node Version: ${process.version} | Environment: ${process.env.NODE_ENV || 'production'}`);
   log.info(`Timezone enforced: ${process.env.TZ} (${IST_TIMEZONE})`);
 });

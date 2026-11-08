@@ -1,0 +1,17 @@
+{
+  "issuer": "https://urbancraftgifts.com",
+  "authorization_endpoint": "https://urbancraftgifts.com/auth/agent/authorize",
+  "token_endpoint": "https://urbancraftgifts.com/auth/agent/token",
+  "jwks_uri": "https://urbancraftgifts.com/.well-known/jwks.json",
+  "response_types_supported": ["code", "token"],
+  "grant_types_supported": ["client_credentials", "authorization_code"],
+  "scopes_supported": ["inquiry:write", "catalogue:read", "public"],
+  "service_documentation": "https://urbancraftgifts.com/docs/api",
+  "agent_auth": {
+    "register_uri": "https://urbancraftgifts.com/auth.md",
+    "supported_identity_types": ["agent-credential", "bearer-token"],
+    "credential_types": ["api_key", "oauth2_bearer"],
+    "claim_endpoint": "https://urbancraftgifts.com/auth/agent/claim",
+    "revocation_endpoint": "https://urbancraftgifts.com/auth/agent/revoke"
+  }
+}

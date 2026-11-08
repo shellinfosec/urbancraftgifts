@@ -347,15 +347,15 @@ npm run build
 
 ## 6. cPanel Hybrid Deployment Architecture (Static Frontend & Node.js API)
 
-- **Domain**: `urbancraftgifts.com` (and `demo.urbancraftgifts.com`)
+- **Domain**: `urbancraftgifts.com` (and `www.urbancraftgifts.com`)
 - **GitHub Repository**: `https://github.com/shellinfosec/urbancraftgifts` (`main` branch)
 - **Frontend Deployment**: Pre-compiled Static SPA on Apache (`dist/` folder deployed to `/home/urbancraftgifts/public_html`).
-- **Backend API Deployment**: Node.js Express server running under Phusion Passenger on cPanel (`/home/urbancraftgifts/urbancraftgifts-api`), bootstrapped via `cpanel-start.cjs` to eliminate 503 errors.
-- **Prerender Pipeline**: `npm run build` executes `vite build` followed by `scripts/prerender-spa.mjs`, prerendering all 29 static routes into `dist/` along with `.htaccess` and all asset bundles.
+- **Backend API Deployment**: Node.js Express server running under Phusion Passenger on cPanel (`/home/urbancraftgifts/urbancraftgifts-api`), bootstrapped via `cpanel-start.cjs` with dynamic port allocation (no static port conflict).
+- **Prerender Pipeline**: `npm run build` executes `vite build` followed by `scripts/prerender-spa.mjs`, prerendering all 29 static routes into `dist/` along with `.htaccess`, all asset bundles, and agent discovery files.
 - **cPanel Deployment Manifest (`.cpanel.yml`)**:
   - Initializes directories (`public_html`, `urbancraftgifts-api`, `data`, `logs`, `tmp`, `backups`).
   - Safely backs up active runtime lead data before deployment: `cp -rn data/. backups/data-latest/`.
-  - Deploys static frontend to `public_html` (and syncs `demo.urbancraftgifts.com`).
+  - Deploys static frontend to `public_html`.
   - Deploys backend API: `server.js`, `cpanel-start.cjs`, `server-package.json` -> `package.json`.
   - Safely copies `.env` if not present (`cp -n .env`).
   - Touches `tmp/restart.txt` to trigger Phusion Passenger live reload without server restart.
@@ -363,9 +363,23 @@ npm run build
   - Zero-loss atomic monthly rotating lead files (`november-2026-leads.json` and `.jsonl`) with sequential write queue (`enqueueWrite`).
   - Captures full telemetry: client IP, Geolocation (via `ip-api` / Cloudflare headers), ISP network, device, OS, browser, referrer, and IST timestamps (`Asia/Kolkata`, UTC+05:30).
   - Multi-layer bot defense: Cloudflare Turnstile server verification + silent honeypot trap (`hp_website`, `hp_email`) + timing anomaly check (< 750ms).
+  - Strict calendar backdate prevention: validates that all event/delivery target dates cannot be in the past.
 - **Outbound Email Notifications**:
   - Dispatched via SSL SMTP (`s782.bom1.mysecurecloudhost.com:465`) from `notifications@urbancraftgifts.com`.
   - Minimalistic, light-themed branded HTML email matching Urban Craft aesthetics (sand/ivory `#FAF8F5`, olive `#2F3A2E`, brown `#8C6D58`).
   - Direct action buttons for "Reply via Email" and "Message on WhatsApp".
+- **Agent Discovery & Standards (AEO / GEO / Agent-Ready)**:
+  - RFC 8288 Link headers on root and API responses.
+  - RFC 9727 API Catalog at `/.well-known/api-catalog` with OpenAPI 3.1.0 at `/.well-known/openapi.json`.
+  - ARD Manifest at `/.well-known/ai-catalog.json` with semantic queries.
+  - MCP Server Card (SEP-1649) at `/.well-known/mcp/server-card.json`.
+  - Agent Skills Discovery Index at `/.well-known/agent-skills/index.json`.
+  - WebMCP browser tool registration in `src/lib/webmcp.ts`.
+  - Markdown for Agents content negotiation (`Accept: text/markdown`).
+  - Content-Signals declared in `robots.txt` (`ai-train=no, search=yes, ai-input=yes`).
+  - DNS-AID records documented in `docs/DNS-AID-ZONE-RECORDS.md` and `/.well-known/dns-aid.json`.
+  - Canonical XML sitemap listing all 29 routes at `/sitemap.xml`.
+  - Complete Schema.org JSON-LD (Organization, LocalBusiness, WebSite, FAQPage, BreadcrumbList).
+  - Absolute OpenGraph and Twitter sharing tags across all pages.
 
 This file serves as the definitive reference for the Urban Craft & Co. architecture, component relationships, data flow, and codebase conventions.

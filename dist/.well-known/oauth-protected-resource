@@ -1,0 +1,15 @@
+{
+  "resource": "https://urbancraftgifts.com/api",
+  "authorization_servers": [
+    "https://urbancraftgifts.com"
+  ],
+  "scopes_supported": [
+    "inquiry:write",
+    "catalogue:read",
+    "public"
+  ],
+  "bearer_methods_supported": [
+    "header"
+  ],
+  "resource_documentation": "https://urbancraftgifts.com/docs/api"
+}

@@ -185,7 +185,13 @@ export function InlineInquiry({
               </div>
             </div>
           ) : (
-            <form onSubmit={submit} noValidate className="grid gap-5">
+            <form
+              onSubmit={submit}
+              noValidate
+              className="grid gap-5"
+              toolname="quick_corporate_inquiry"
+              tooldescription="Submit a quick initial corporate inquiry to Urban Craft & Co."
+            >
               {/* Anti-bot Honeypot */}
               <div style={{ display: "none" }} aria-hidden="true">
                 <input

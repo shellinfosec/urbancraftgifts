@@ -25,7 +25,6 @@ deployment:
     # 3. Deploy Pre-compiled Static Frontend (Zero cPanel CPU build load)
     - /bin/cp -a dist/. $FRONTENDPATH/
     - if [ -f "public/favicon.ico" ]; then /bin/cp -f public/favicon.ico $FRONTENDPATH/favicon.ico; fi
-    - if [ -d "/home/urbancraftgifts/demo.urbancraftgifts.com" ]; then /bin/cp -a dist/. /home/urbancraftgifts/demo.urbancraftgifts.com/; fi
 
     # 4. Deploy Node.js API Backend
     - /bin/cp -f server.js $APIPATH/

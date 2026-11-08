@@ -21,8 +21,9 @@ import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { CookieConsent, FloatingActions } from "@/components/layout/SiteChrome";
 import { Logo } from "@/components/brand/Logo";
 import { Toaster } from "@/components/ui/sonner";
-import { localBusinessJsonLd } from "@/lib/seo";
+import { localBusinessJsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { NavigationProgress } from "@/components/layout/NavigationProgress";
+import { initWebMCP } from "@/lib/webmcp";
 
 function NotFoundComponent() {
   return (
@@ -113,8 +114,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", sizes: "16x16", href: FAVICONS.png16 },
       { rel: "apple-touch-icon", sizes: "180x180", href: FAVICONS.apple180 },
       { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "api-catalog", href: "/.well-known/api-catalog" },
+      { rel: "service-desc", href: "/.well-known/ai-catalog.json", type: "application/json" },
+      {
+        rel: "agent-skills",
+        href: "/.well-known/agent-skills/index.json",
+        type: "application/json",
+      },
+      {
+        rel: "mcp-server-card",
+        href: "/.well-known/mcp/server-card.json",
+        type: "application/json",
+      },
+      { rel: "author-doc", href: "/auth.md", type: "text/markdown" },
     ],
-    scripts: [localBusinessJsonLd()],
+    scripts: [localBusinessJsonLd(), organizationJsonLd(), websiteJsonLd()],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -138,6 +152,10 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    initWebMCP();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

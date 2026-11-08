@@ -1,0 +1,34 @@
+{
+  "$schema": "https://datatracker.ietf.org/doc/draft-mozleywilliams-dnsop-dnsaid/",
+  "version": "1.0",
+  "domain": "urbancraftgifts.com",
+  "records": [
+    {
+      "name": "_index._agents.urbancraftgifts.com",
+      "type": "HTTPS",
+      "priority": 1,
+      "target": "urbancraftgifts.com.",
+      "params": {
+        "alpn": "h2,h3",
+        "port": 443,
+        "path": "/.well-known/ai-catalog.json"
+      }
+    },
+    {
+      "name": "_a2a._agents.urbancraftgifts.com",
+      "type": "HTTPS",
+      "priority": 1,
+      "target": "urbancraftgifts.com.",
+      "params": {
+        "alpn": "h2,h3",
+        "port": 443,
+        "path": "/.well-known/mcp/server-card.json"
+      }
+    },
+    {
+      "name": "_agents.urbancraftgifts.com",
+      "type": "TXT",
+      "value": "v=dnsaid1; ard=https://urbancraftgifts.com/.well-known/ai-catalog.json; skills=https://urbancraftgifts.com/.well-known/agent-skills/index.json; mcp=https://urbancraftgifts.com/.well-known/mcp/server-card.json"
+    }
+  ]
+}

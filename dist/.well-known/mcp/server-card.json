@@ -1,0 +1,93 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/server-card.v1.json",
+  "serverInfo": {
+    "name": "Urban Craft & Co. Corporate Gifting MCP Server",
+    "version": "1.0.0",
+    "description": "Exposes corporate gifting tools, catalogue search, customized set builders, and quotation request automation for Urban Craft & Co.",
+    "vendor": "Urban Craft & Co.",
+    "homepage": "https://urbancraftgifts.com"
+  },
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://urbancraftgifts.com/api/mcp",
+    "fallback": {
+      "type": "rest",
+      "endpoint": "https://urbancraftgifts.com/api"
+    }
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": false
+    },
+    "resources": {
+      "subscribe": false,
+      "listChanged": false
+    },
+    "prompts": {
+      "listChanged": false
+    }
+  },
+  "tools": [
+    {
+      "name": "search_catalogue",
+      "description": "Search corporate gifting collections across 16 categories, pricing bands, and gift set combinations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Keyword search (e.g. 'leather bag', 'bottles', 'welcome kit')"
+          },
+          "category": {
+            "type": "string",
+            "description": "Category slug, e.g. 'employee-welcome-kits', '3-in-1-gift-sets'"
+          },
+          "minPrice": { "type": "number", "description": "Minimum unit price in INR" },
+          "maxPrice": { "type": "number", "description": "Maximum unit price in INR" }
+        }
+      }
+    },
+    {
+      "name": "get_product",
+      "description": "Fetch detailed specifications, imagery, and component breakdown for a specific product SKU.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["sku"],
+        "properties": {
+          "sku": { "type": "string", "description": "Product SKU, e.g. 'GS-2IO-1', 'BTL-1'" }
+        }
+      }
+    },
+    {
+      "name": "submit_inquiry",
+      "description": "Submit a corporate gifting enquiry or request a quotation proposal.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["name", "email", "phone", "message"],
+        "properties": {
+          "name": { "type": "string", "description": "Client name" },
+          "email": { "type": "string", "description": "Corporate email address" },
+          "phone": { "type": "string", "description": "Contact telephone or WhatsApp number" },
+          "company": { "type": "string", "description": "Company or organisation name" },
+          "quantity": { "type": "string", "description": "Estimated quantity range" },
+          "date": {
+            "type": "string",
+            "description": "Target delivery deadline (YYYY-MM-DD, cannot be in the past)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Brief description of the corporate gifting need"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_business_contact",
+      "description": "Retrieve official company facts, verified phone numbers, email, WhatsApp, and delivery locations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

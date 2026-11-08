@@ -18,12 +18,26 @@ export const QUANTITY_RANGES = [
   "Not sure yet",
 ] as const;
 
+export function getTodayISTDateString(): string {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+  } catch {
+    return new Date().toISOString().substring(0, 10);
+  }
+}
+
 export const inquirySchema = z.object({
   intent: z.string().min(1, "Choose what the gifts are for"),
   categories: z.array(z.string()),
   products: z.array(z.string()),
   quantity: z.string().min(1, "Choose an approximate quantity"),
-  date: z.string().optional(),
+  date: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === "") return true;
+      return val >= getTodayISTDateString();
+    }, "Target date cannot be in the past"),
   customization: z.enum(["yes", "no", "unsure"]),
   location: z.string().trim().max(120).optional(),
   name: z.string().trim().min(2, "Please enter your name").max(80),
@@ -52,6 +66,13 @@ export const contactFormSchema = z.object({
   company: z.string().trim().max(100).optional(),
   purpose: z.string().optional(),
   quantity: z.string().optional(),
+  date: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === "") return true;
+      return val >= getTodayISTDateString();
+    }, "Target date cannot be in the past"),
   message: z
     .string()
     .trim()

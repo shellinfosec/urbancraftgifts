@@ -1,4 +1,4 @@
-# Apache configuration for Urban Craft & Co. (SPA & Prerendered Routes)
+# Apache configuration for Urban Craft & Co. (SPA, Prerendered Routes & Agent Discovery)
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -6,7 +6,7 @@
   # Disable directory index browsing
   Options -Indexes
 
-  # Serve existing files and directories directly (e.g. assets, pdfs, images)
+  # Serve existing files and directories directly (e.g. assets, pdfs, images, sitemap.xml, robots.txt, .well-known)
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
@@ -14,6 +14,15 @@
   # Exclude backend API routes from SPA index.html fallback (routes to Node / Passenger)
   RewriteCond %{REQUEST_URI} ^/api [NC]
   RewriteRule ^ - [L]
+
+  # Markdown for Agents content negotiation (requests with Accept: text/markdown)
+  RewriteCond %{HTTP:Accept} text/markdown [NC]
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteRule ^$ index.md [L]
+
+  RewriteCond %{HTTP:Accept} text/markdown [NC]
+  RewriteCond %{DOCUMENT_ROOT}/$1.md -f
+  RewriteRule ^(.*)$ $1.md [L]
 
   # If an html file exists matching the exact path (e.g. /catalogue -> /catalogue.html)
   RewriteCond %{DOCUMENT_ROOT}/$1.html -f
@@ -23,26 +32,40 @@
   RewriteRule ^ index.html [L]
 </IfModule>
 
-# Security & Compression Headers
+# Security, Compression & Agent Discovery Headers
 <IfModule mod_headers.c>
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # RFC 8288 Link Headers for Agent Discovery
+  Header set Link "</.well-known/api-catalog>; rel=\"api-catalog\", </.well-known/ai-catalog.json>; rel=\"service-desc\", </.well-known/mcp/server-card.json>; rel=\"mcp-server-card\", </.well-known/agent-skills/index.json>; rel=\"agent-skills\", </auth.md>; rel=\"author-doc\", </docs/api>; rel=\"service-doc\""
+
+  # CORS open access for well-known discovery catalogs, sitemaps, and manifests
+  <FilesMatch "(ai-catalog\.json|server-card\.json|index\.json|api-catalog|openapi\.json|openid-configuration|oauth-authorization-server|oauth-protected-resource|sitemap\.xml|robots\.txt|auth\.md)">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, OPTIONS, HEAD"
+    Header set Access-Control-Allow-Headers "*"
+  </FilesMatch>
 
   # Static assets aggressive caching (1 year)
   <FilesMatch "\.(ico|pdf|jpg|jpeg|png|gif|webp|svg|css|js|woff|woff2|ttf|eot)$">
     Header set Cache-Control "max-age=31536000, public, immutable"
   </FilesMatch>
 
-  # HTML & webmanifest short cache / revalidate
-  <FilesMatch "\.(html|webmanifest|json)$">
+  # HTML, Markdown, XML & webmanifest short cache / revalidate
+  <FilesMatch "\.(html|webmanifest|json|xml|md)$">
     Header set Cache-Control "max-age=0, must-revalidate"
+    Header set Vary "Accept"
   </FilesMatch>
 </IfModule>
 
-# Standard MIME Types
+# Standard & Agentic MIME Types
 <IfModule mod_mime.c>
   AddType application/manifest+json .webmanifest
+  AddType application/linkset+json api-catalog
+  AddType text/markdown .md
+  AddType application/xml .xml
   AddType image/webp .webp
   AddType image/svg+xml .svg
   AddType application/pdf .pdf

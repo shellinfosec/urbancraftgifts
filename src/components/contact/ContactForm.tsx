@@ -6,6 +6,7 @@ import {
   contactFormSchema,
   submitContactForm,
   QUANTITY_RANGES,
+  getTodayISTDateString,
   type ContactFormData,
 } from "@/lib/inquiry-service";
 import { BUSINESS } from "@/config/business";
@@ -56,6 +57,7 @@ export function ContactForm({ className = "" }: { className?: string }) {
       company: "",
       purpose: "corporate-gifting",
       quantity: "",
+      date: "",
       message: "",
       hp_website: "",
     },
@@ -186,7 +188,13 @@ export function ContactForm({ className = "" }: { className?: string }) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        className="space-y-5"
+        toolname="submit_corporate_inquiry"
+        tooldescription="Submit corporate gifting requirements and request a personalized catalog quote"
+      >
         {/* Anti-bot Honeypots (hidden from humans) */}
         <div style={{ display: "none" }} aria-hidden="true">
           <label htmlFor="uc-hp-website">Website</label>
@@ -210,6 +218,7 @@ export function ContactForm({ className = "" }: { className?: string }) {
               placeholder="e.g. Priya Sharma"
               autoComplete="name"
               className="mt-1.5 h-11"
+              toolparamdescription="Full name of the contact person"
               aria-invalid={Boolean(errors.name)}
               {...register("name")}
             />
@@ -226,6 +235,7 @@ export function ContactForm({ className = "" }: { className?: string }) {
               placeholder="e.g. Microsoft India"
               autoComplete="organization"
               className="mt-1.5 h-11"
+              toolparamdescription="Name of your enterprise, startup, or organization"
               {...register("company")}
             />
           </div>
@@ -243,6 +253,7 @@ export function ContactForm({ className = "" }: { className?: string }) {
               placeholder="priya@company.com"
               autoComplete="email"
               className="mt-1.5 h-11"
+              toolparamdescription="Corporate email address for receiving quote PDF and mockups"
               aria-invalid={Boolean(errors.email)}
               {...register("email")}
             />
@@ -261,6 +272,7 @@ export function ContactForm({ className = "" }: { className?: string }) {
               placeholder="+91 98765 43210"
               autoComplete="tel"
               className="mt-1.5 h-11"
+              toolparamdescription="Phone or WhatsApp number for fast turnaround and preview coordination"
               aria-invalid={Boolean(errors.phone)}
               {...register("phone")}
             />
@@ -270,13 +282,14 @@ export function ContactForm({ className = "" }: { className?: string }) {
           </div>
         </div>
 
-        {/* Row 3: Purpose and Quantity */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        {/* Row 3: Purpose, Quantity and Target Delivery Date */}
+        <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <Label htmlFor="contact-purpose">Gifting Requirement</Label>
             <select
               id="contact-purpose"
               className="mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              toolparamdescription="Gifting requirement purpose"
               {...register("purpose")}
             >
               {PURPOSE_OPTIONS.map((opt) => (
@@ -292,6 +305,7 @@ export function ContactForm({ className = "" }: { className?: string }) {
             <select
               id="contact-qty"
               className="mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              toolparamdescription="Estimated order volume / number of gift boxes needed"
               {...register("quantity")}
             >
               <option value="">Not sure yet</option>
@@ -301,6 +315,22 @@ export function ContactForm({ className = "" }: { className?: string }) {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <Label htmlFor="contact-date">
+              Needed by <span className="text-muted-foreground text-xs">(optional)</span>
+            </Label>
+            <Input
+              id="contact-date"
+              type="date"
+              min={getTodayISTDateString()}
+              className="mt-1.5 h-11"
+              toolparamdescription="Target delivery deadline or event date (cannot be in the past)"
+              aria-invalid={Boolean(errors.date)}
+              {...register("date")}
+            />
+            {errors.date && <p className="mt-1 text-xs text-destructive">{errors.date.message}</p>}
           </div>
         </div>
 

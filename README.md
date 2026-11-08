@@ -1,4 +1,4 @@
-# 🌿 Urban Craft & Co. — Corporate Gifting Lookbook & Web Platform
+# 🌿 Urban Craft & Co. — Corporate Gifting Platform & Agent-Ready Web Architecture
 
 <div align="center">
 
@@ -8,83 +8,109 @@
 [![React 19](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Node.js API](https://img.shields.io/badge/API-Express%20%2B%20Nodemailer-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.2-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Agent Ready](https://img.shields.io/badge/Agentic-RFC%209727%20%7C%20MCP%20%7C%20WebMCP-8C6D58?style=for-the-badge&logo=robot&logoColor=white)](https://agenticresourcediscovery.org)
 
-**Premium corporate gifting studio web application, interactive 2026 catalogue lookbook, secure validated contact form module, and automated cPanel deployment with Phusion Passenger API backend.**
+**Production corporate gifting studio platform, interactive 2026 catalogue lookbook, hardened contact form module with backdate prevention, secure SMTP notification engine, zero-loss monthly JSON lead telemetry, and full Agent-Ready Discovery standards.**
 
-[Live Website](https://urbancraftgifts.com) • [Deployment Guide](#-cpanel-deployment-guide) • [Architecture](#-architecture--deployment-pipeline) • [Local Development](#-local-development)
+[Live Website](https://urbancraftgifts.com) • [cPanel Deployment](#-cpanel-deployment-guide) • [Agent Discovery & Standards](#-agent-discovery--ai-standards) • [Local Development](#-local-development--build-commands)
 
 </div>
 
 ---
 
-## 📌 Project & Deployment Variables
+## 📌 Project & Production Specifications
 
-| Variable                         | Configured Value                                           |
-| :------------------------------- | :--------------------------------------------------------- |
-| **Project Domain**               | `urbancraftgifts.com` (and `demo.urbancraftgifts.com`)      |
-| **GitHub Repository**            | `https://github.com/shellinfosec/urbancraftgifts`          |
-| **cPanel Frontend Directory**    | `/home/urbancraftgifts/public_html`                        |
-| **cPanel API Root Directory**    | `/home/urbancraftgifts/urbancraftgifts-api`                |
-| **Deployment Mode**              | **Static SPA on Apache** + **Phusion Passenger Node.js API**|
-| **Target Build Directory**       | `dist/`                                                    |
-| **Author**                       | **Syed Haseeb Rizvi** (`syedhaseeb@shellinfosec.com`)      |
-| **Target Branch**                | `main`                                                     |
+| Specification                 | Production Value                                                           |
+| :---------------------------- | :------------------------------------------------------------------------- |
+| **Production Domain**         | `https://urbancraftgifts.com` (and `https://www.urbancraftgifts.com`)      |
+| **GitHub Repository**         | `https://github.com/shellinfosec/urbancraftgifts`                          |
+| **Target Branch**             | `main`                                                                     |
+| **cPanel Frontend Directory** | `/home/urbancraftgifts/public_html`                                        |
+| **cPanel API Root Directory** | `/home/urbancraftgifts/urbancraftgifts-api`                                |
+| **Port Assignment**           | Dynamic via cPanel Node.js Application Manager (Phusion Passenger)         |
+| **Timezone Standard**         | **Indian Standard Time (IST, Asia/Kolkata, UTC+05:30)**                    |
+| **Email Transport**           | Port 465 SSL over authenticated SMTP (`notifications@urbancraftgifts.com`) |
 
 ---
 
-## 🏛 Architecture & Deployment Pipeline
+## 🏛 Architecture & Dual-Engine Deployment
 
-This application is built with React 19, Vite, and TanStack Router, prerendering every single page into clean static HTML and committed directly in the `dist/` directory.
+Urban Craft & Co. deploys a decoupled, high-resilience architecture combining Apache's instant static file serving with Phusion Passenger's managed Node.js API runtime:
 
 ```mermaid
-graph LR
-    A[Local Build: npm run build] -->|Compiles & Prerenders 29+ Pages| B[dist/ Directory]
-    B -->|git commit & push| C[GitHub Repository: main]
-    C -->|cPanel Git Version Control| D[cPanel Pull / Deploy]
-    D -->|Executes .cpanel.yml| E[/home/urbancraftgifts/demo.urbancraftgifts.com]
-    E -->|Apache Server| F[Live Website: demo.urbancraftgifts.com]
+graph TD
+    A[git push origin main] -->|cPanel Git Version Control| B[cPanel Automated Deployment]
+    B -->|Executes .cpanel.yml| C{Deployment Dispatcher}
+    C -->|Deploys Prerendered Static Build| D[/home/urbancraftgifts/public_html]
+    C -->|Deploys Backend Code & Manifest| E[/home/urbancraftgifts/urbancraftgifts-api]
+    C -->|Touches restart.txt| F[Phusion Passenger Live Reload]
+    D -->|Apache Direct 0ms Delivery| G[Live Visitors / Browsers]
+    D -->|Proxies /api & .well-known| E
+    E -->|Express Hardened API| H[SMTP Dispatch & Monthly Leads JSON]
 ```
 
-### Key Advantages of This Architecture
+### Key Architectural Strengths
 
-1. **Zero cPanel Server Overhead**: No background Node.js daemons, no Phusion Passenger processes to manage, and no runtime memory consumption on your cPanel account.
-2. **Sub-second Loading Speed**: Apache delivers static HTML, WebP/PNG images, stylesheets, and JavaScript bundles directly with aggressive caching headers.
-3. **Flawless Client-Side Routing**: The deployed `dist/.htaccess` routes any non-file URLs straight to `index.html`, ensuring page reloads and deep links never trigger 404s.
-4. **Instant cPanel Git Deployment**: `.cpanel.yml` simply copies `dist/` directly into `/home/urbancraftgifts/demo.urbancraftgifts.com` via `/bin/cp -R dist/. $DEPLOYPATH/`.
+1. **Dynamic Port Management**: Never binds to hardcoded port numbers in production; integrates directly with cPanel Passenger's dynamically allocated pipes and environment sockets.
+2. **Backdate Prevention**: All corporate gifting and contact forms enforce native calendar date constraints (`min={YYYY-MM-DD}`) and server-side Zod validation ensuring target dates cannot be set to past dates.
+3. **Zero-Loss Atomic Persistence**: Every submission is written synchronously to append-only `.jsonl` files and queued atomically to monthly rotating lead databases (`data/november-2026-leads.json`).
+4. **Branded Minimalist Light Emails**: Notifications render using Urban Craft brand guidelines (`#FAF8F5`, `#2F3A2E`, `#8C6D58`, `#C2A268`) with complete client telemetry (IP, ISP, Geolocation, Device, IST Timestamps).
+
+---
+
+## 🤖 Agent Discovery & AI Standards (AEO, GEO, Agentic-Ready)
+
+This platform implements the complete suite of modern AI Agent Discovery standards:
+
+| Standard / Goal                         | File / Endpoint                                  | Purpose                                                                           |
+| :-------------------------------------- | :----------------------------------------------- | :-------------------------------------------------------------------------------- |
+| **RFC 8288 Link Headers**               | `Link:` Response Header                          | Advertises API catalog, ARD manifest, MCP card, and skills                        |
+| **RFC 9727 API Catalog**                | `/.well-known/api-catalog`                       | Standard linkset pointing to OpenAPI, docs, and health endpoints                  |
+| **OpenAPI 3.1 Schema**                  | `/.well-known/openapi.json`                      | Full machine-readable API specification                                           |
+| **ARD Capability Manifest**             | `/.well-known/ai-catalog.json`                   | Agentic Resource Discovery manifest with representative queries                   |
+| **MCP Server Card (SEP-1649)**          | `/.well-known/mcp/server-card.json`              | Model Context Protocol tools definition (`search_catalogue`, `get_product`, etc.) |
+| **Agent Skills Index (RFC v0.2.0)**     | `/.well-known/agent-skills/index.json`           | Registered agent skills with SHA-256 digest validation                            |
+| **WebMCP Integration**                  | `src/lib/webmcp.ts`                              | Browser agent tool registration (`document.modelContext.registerTool`)            |
+| **Markdown for Agents**                 | Content Negotiation (`Accept: text/markdown`)    | Token-efficient markdown representations of pages for LLM RAG pipelines           |
+| **Content Signals**                     | `/robots.txt` (`Content-Signal: ai-train=no...`) | AI usage preferences declarations (contentsignals.org)                            |
+| **DNS-AID Records**                     | `docs/DNS-AID-ZONE-RECORDS.md`                   | DNS-based agent entrypoints (`_index._agents.urbancraftgifts.com`)                |
+| **OAuth / OIDC Metadata**               | `/.well-known/oauth-authorization-server`        | OAuth 2.0 authorization server metadata with `agent_auth` block                   |
+| **OAuth Protected Resource (RFC 9728)** | `/.well-known/oauth-protected-resource`          | Resource identifier and scope declaration for AI agents                           |
+| **Agent Auth Guidelines**               | `/auth.md`                                       | Non-interactive registration and inquiry guidelines                               |
+| **Canonical XML Sitemap**               | `/sitemap.xml`                                   | Fully indexed list of all 29 routes and category lookbooks                        |
 
 ---
 
 ## 🚀 cPanel Deployment Guide
 
-Deploying updates to `demo.urbancraftgifts.com` requires only a single click in your cPanel dashboard:
+### Step 1: Git Version Control Setup
 
-### Step 1: Open Git™ Version Control in cPanel
-
-1. Log into your **cPanel Account**.
-2. Under **Files**, open **Git™ Version Control**.
-3. If not already configured, click **Create**:
-   - **Clone URL**: `https://github.com/shellinfosec/urbancraft-demo.git`
-   - **Repository Path**: `repositories/urbancraft-demo`
-   - **Repository Name**: `urbancraft-demo`
+1. In cPanel, navigate to **Files** > **Git™ Version Control**.
+2. Click **Create**:
+   - **Clone URL**: `https://github.com/shellinfosec/urbancraftgifts.git`
+   - **Repository Path**: `repositories/urbancraftgifts`
+   - **Repository Name**: `urbancraftgifts`
    - Click **Create**.
 
-### Step 2: Deploy Head Commit
+### Step 2: Node.js Application Manager Setup
 
-1. In **Git™ Version Control**, click **Manage** next to `urbancraft-demo`.
-2. Select the **Pull or Deploy** tab.
-3. Click **Update from Remote** (fetches latest commits from `main`).
-4. Click **Deploy HEAD Commit**.
+1. In cPanel, open **Setup Node.js App**.
+2. Click **Create Application**:
+   - **Node.js version**: `18.x` or `20.x`
+   - **Application mode**: `Production`
+   - **Application root**: `urbancraftgifts-api`
+   - **Application startup file**: `cpanel-start.cjs`
+   - **Application URL**: `api` (or leave default for passenger socket)
+   - Click **Create**.
+3. Under **Application configuration**, click **Run NPM Install** to install dependencies from `package.json`.
+4. In cPanel **File Manager**, ensure `/home/urbancraftgifts/urbancraftgifts-api/.env` contains your production SMTP and Turnstile keys.
 
-> [!NOTE]
-> The automated `.cpanel.yml` script copies all production files from `dist/` into `/home/urbancraftgifts/demo.urbancraftgifts.com` in seconds. Your site is immediately live with all pages, media assets, and `.htaccess` routing rules active.
+### Step 3: Deploy and Live Reload
 
----
-
-## 🔒 Security & Environment Variables
-
-- **Strict Environment Protection**: All `.env`, `.env.*`, and `.dev.vars` files are strictly excluded via `.gitignore`.
-- **Zero Sensitive Data**: No passwords, tokens, or credentials are committed to the repository history.
-- **Client Safe**: All client configuration uses `VITE_` variables bundled during local compilation.
+1. Under **Git™ Version Control**, click **Manage** on `urbancraftgifts`.
+2. Go to the **Pull or Deploy** tab.
+3. Click **Update from Remote** and then **Deploy HEAD Commit**.
+4. `.cpanel.yml` automatically moves `dist/` into `public_html/`, updates `urbancraftgifts-api/`, backs up lead databases, and touches `tmp/restart.txt` to trigger an instant zero-downtime reload!
 
 ---
 
@@ -94,57 +120,24 @@ Deploying updates to `demo.urbancraftgifts.com` requires only a single click in 
 # 1. Install dependencies
 npm install
 
-# 2. Run local development server
+# 2. Run local dev server with API proxying
 npm run dev
 
-# 3. Execute automated test suite (Vitest)
-npm run test
+# 3. Execute Vitest test suite
+npx vitest run
 
-# 4. Check code quality (ESLint)
+# 4. Verify TypeScript compilation
+npx tsc --noEmit
+
+# 5. Run ESLint validation
 npm run lint
 
-# 5. Format code (Prettier)
-npm run format
-
-# 6. Production build (compiles assets & prerenders all static pages into dist/)
+# 6. Build production static bundle and prerender all 29 routes
 npm run build
-
-# 7. Preview the build locally
-npm run preview
 ```
 
 ---
 
-## 📂 Repository Structure
+## 🛡️ License
 
-```text
-├── .cpanel.yml                # Automated deployment script for cPanel
-├── dist/                      # Pre-compiled, production-ready static site (Committed)
-│   ├── .htaccess              # Apache URL rewrite and caching rules
-│   ├── index.html             # Homepage prerendered HTML shell
-│   ├── catalogue.html         # 2026 Lookbook catalogue prerendered HTML
-│   ├── products.html          # All products directory
-│   ├── categories/            # 16 prerendered category pages
-│   ├── assets/                # JS bundles, CSS, logos, and product photography
-│   └── manifest.webmanifest   # Web application manifest
-├── public/                    # Raw static assets
-│   ├── .htaccess              # Base Apache rewrite rules
-│   └── favicon.ico            # Favicon set
-├── scripts/
-│   └── prerender-spa.mjs      # Fast static HTML generator for 29+ routes
-├── src/                       # Application source code
-│   ├── components/            # UI components (catalog, brand, layout, inquiry)
-│   ├── config/                # Business facts, navigation, categories, content
-│   ├── data/                  # 327+ Normalized product catalogue (products.json)
-│   └── routes/                # File-based application routes
-├── package.json               # Dependencies and scripts
-└── vite.config.ts             # Vite build configuration
-```
-
----
-
-## 👤 Author & Support
-
-- **Author**: **Syed Haseeb Rizvi**
-- **Email**: [syedhaseeb@shellinfosec.com](mailto:syedhaseeb@shellinfosec.com)
-- **Organization**: Shell InfoSec / Urban Craft & Co.
+Proprietary © 2026 Urban Craft & Co. All rights reserved. Managed by Shell InfoSec.

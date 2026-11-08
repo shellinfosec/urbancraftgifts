@@ -13,6 +13,7 @@ import {
   inquirySchema,
   inquiryToText,
   submitInquiry,
+  getTodayISTDateString,
   type InquiryData,
 } from "@/lib/inquiry-service";
 import type { InquiryPrefill } from "@/components/providers/OverlayProvider";
@@ -220,7 +221,14 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
                 </div>
               </div>
             ) : (
-              <form onSubmit={onSubmit} className="flex min-h-0 min-w-0 flex-1 flex-col" noValidate>
+              <form
+                onSubmit={onSubmit}
+                className="flex min-h-0 min-w-0 flex-1 flex-col"
+                noValidate
+                // Declarative WebMCP form annotations
+                toolname="build_corporate_inquiry_quote"
+                tooldescription="Multi-step corporate gifting proposal request builder for customized gift sets and merchandise"
+              >
                 <ol className="flex gap-1.5 px-5 pt-4 md:px-7" aria-label="Progress">
                   {STEPS.map((s, i) => (
                     <li key={s.title} className="flex-1">
@@ -432,9 +440,16 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
                           <Input
                             id="inq-date"
                             type="date"
+                            min={getTodayISTDateString()}
                             className="mt-1.5 h-11"
+                            toolparamdescription="Target delivery or event deadline (YYYY-MM-DD, cannot be in the past)"
                             {...register("date")}
                           />
+                          {errors.date && (
+                            <p className="mt-1.5 text-xs text-destructive" role="alert">
+                              {errors.date.message}
+                            </p>
+                          )}
                         </div>
                         <div>
                           <Label htmlFor="inq-loc">Delivery city / locations</Label>
@@ -442,6 +457,7 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
                             id="inq-loc"
                             placeholder="e.g. Delhi, Gurugram"
                             className="mt-1.5 h-11"
+                            toolparamdescription="Target delivery cities or office locations"
                             {...register("location")}
                           />
                         </div>

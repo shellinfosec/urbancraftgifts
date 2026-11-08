@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Content Signals for AI and Agents (contentsignals.org / draft-romm-aipref-contentsignals)
+Content-Signal: ai-train=no, search=yes, ai-input=yes
+
+# Canonical XML Sitemap
 Sitemap: https://urbancraftgifts.com/sitemap.xml

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://agentskills.io/schemas/v0.2.0/skills-index.json",
+  "name": "Urban Craft & Co. Skills Registry",
+  "version": "1.0.0",
+  "homepage": "https://urbancraftgifts.com",
+  "skills": [
+    {
+      "name": "urban-craft-corporate-gifting",
+      "type": "skill",
+      "description": "Corporate gifting consultation, quotation calculation, custom branding guidance, and bulk order logistics for Urban Craft & Co.",
+      "url": "https://urbancraftgifts.com/.well-known/agent-skills/corporate-gifting/SKILL.md",
+      "sha256": "cb0c7580f4cba56a0cf13023a0ac7b9b188261e7cd9ccfc87a9a4e0dfba8ff44"
+    },
+    {
+      "name": "urban-craft-catalogue-browser",
+      "type": "skill",
+      "description": "Search and explore 360+ premium executive gift sets, onboarding kits, and drinkware collections.",
+      "url": "https://urbancraftgifts.com/.well-known/agent-skills/catalogue-browser/SKILL.md",
+      "sha256": "0af23a46a6c40aa567a746e0bf2835c844d941196c1356acec30f3a08f309031"
+    }
+  ]
+}

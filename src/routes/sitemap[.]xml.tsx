@@ -4,6 +4,7 @@ import { CATEGORIES } from "@/config/categories";
 
 const STATIC = [
   "/",
+  "/catalogue",
   "/products",
   "/about",
   "/services",

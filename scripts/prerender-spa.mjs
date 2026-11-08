@@ -69,6 +69,13 @@ async function run() {
     console.log(`📦 Copied compiled public assets to dist/`);
   }
 
+  // Ensure all static assets, manifests, and discovery files from public/ are synchronized
+  const publicSrcDir = path.resolve(rootDir, "public");
+  if (fs.existsSync(publicSrcDir)) {
+    fs.cpSync(publicSrcDir, distDir, { recursive: true });
+    console.log("  ✓ Synchronized all public/ assets, sitemaps, and .well-known files to dist/");
+  }
+
   console.log(`📦 Prerendering ${allRoutes.length} static routes into dist/...`);
 
   for (const route of allRoutes) {

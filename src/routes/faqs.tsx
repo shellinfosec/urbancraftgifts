@@ -1,16 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ContactCTA, FaqList, PageHeader } from "@/components/common/PageParts";
 import { FAQ_GROUPS } from "@/config/content";
-import { pageHead } from "@/lib/seo";
+import { pageHead, faqPageJsonLd } from "@/lib/seo";
 
 export const Route = createFileRoute("/faqs")({
-  head: () =>
-    pageHead({
+  head: () => {
+    const allFaqs = FAQ_GROUPS.flatMap((g) => g.items);
+    const headData = pageHead({
       title: "Frequently Asked Questions",
       description:
         "Answers on logo customization, quantities, timelines, artwork, delivery and samples for corporate gift orders.",
       path: "/faqs",
-    }),
+    });
+    return {
+      ...headData,
+      scripts: [faqPageJsonLd(allFaqs)],
+    };
+  },
   component: () => (
     <>
       <PageHeader
