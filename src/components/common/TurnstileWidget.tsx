@@ -4,7 +4,7 @@ import { ShieldCheck, AlertCircle } from "lucide-react";
 declare global {
   interface Window {
     turnstile?: {
-      ready: (fn: () => void) => void;
+      ready?: (fn: () => void) => void;
       render: (
         container: HTMLElement | string,
         params: {
@@ -23,6 +23,7 @@ declare global {
       remove: (widgetId: string) => void;
     };
     onTurnstileLoaded?: () => void;
+    __cfTurnstileLoaded?: () => void;
   }
 }
 
@@ -37,6 +38,91 @@ interface TurnstileWidgetProps {
 
 const PRODUCTION_SITE_KEY = "0x4AAAAAAF4N2BizrqzpRRny";
 const CLOUDFLARE_ALWAYS_PASS_TEST_KEY = "1x00000000000000000000AA";
+
+// Module-level singleton loader for the Cloudflare Turnstile script
+let scriptLoadingPromise: Promise<void> | null = null;
+
+function loadTurnstileScript(): Promise<void> {
+  if (typeof window === "undefined") {
+    return Promise.resolve();
+  }
+
+  // If turnstile is already present and its render function is ready, resolve immediately
+  if (window.turnstile && typeof window.turnstile.render === "function") {
+    return Promise.resolve();
+  }
+
+  if (scriptLoadingPromise) {
+    return scriptLoadingPromise;
+  }
+
+  scriptLoadingPromise = new Promise<void>((resolve) => {
+    const callbackName = "__cfTurnstileLoaded";
+
+    const notifyReady = () => {
+      // Defensive guard: patch window.turnstile.ready if defined so it never throws TurnstileError
+      if (window.turnstile && typeof window.turnstile.ready === "function") {
+        try {
+          const originalReady = window.turnstile.ready;
+          window.turnstile.ready = function (fn: () => void) {
+            try {
+              return originalReady.call(window.turnstile, fn);
+            } catch {
+              // Cloudflare throws if script has async/defer; execute fn directly instead
+              try {
+                fn();
+              } catch (inner) {
+                console.warn("Turnstile callback error:", inner);
+              }
+            }
+          };
+        } catch {
+          // ignore patch errors
+        }
+      }
+      resolve();
+    };
+
+    window[callbackName] = () => {
+      notifyReady();
+    };
+
+    const scriptId = "cf-turnstile-script";
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=${callbackName}`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = (err) => {
+        console.warn("Cloudflare Turnstile script failed to load:", err);
+        notifyReady();
+      };
+      document.head.appendChild(script);
+    } else {
+      script.addEventListener("load", notifyReady, { once: true });
+      script.addEventListener("error", notifyReady, { once: true });
+    }
+
+    // Safety polling in case the script was already cached or the event fired early
+    const checkInterval = setInterval(() => {
+      if (window.turnstile && typeof window.turnstile.render === "function") {
+        clearInterval(checkInterval);
+        notifyReady();
+      }
+    }, 100);
+
+    // Timeout safety: unblock after 6s so form can fallback gracefully
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      notifyReady();
+    }, 6000);
+  });
+
+  return scriptLoadingPromise;
+}
 
 export const TurnstileWidget = React.memo(function TurnstileWidget({
   siteKey,
@@ -69,11 +155,11 @@ export const TurnstileWidget = React.memo(function TurnstileWidget({
       window.location.hostname === "127.0.0.1" ||
       window.location.hostname === "::1");
 
-  const effectiveSiteKey =
-    siteKey ||
-    (isLocalhost
-      ? CLOUDFLARE_ALWAYS_PASS_TEST_KEY
-      : import.meta.env["VITE_TURNSTILE_SITE_KEY"] || PRODUCTION_SITE_KEY);
+  const effectiveSiteKey = isLocalhost
+    ? siteKey === CLOUDFLARE_ALWAYS_PASS_TEST_KEY
+      ? siteKey
+      : CLOUDFLARE_ALWAYS_PASS_TEST_KEY
+    : siteKey || import.meta.env["VITE_TURNSTILE_SITE_KEY"] || PRODUCTION_SITE_KEY;
 
   useEffect(() => {
     let isMounted = true;
@@ -138,66 +224,37 @@ export const TurnstileWidget = React.memo(function TurnstileWidget({
       }
     };
 
-    // Ensure Turnstile script is loaded once
-    const scriptId = "cf-turnstile-script";
-    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
-
-    if (!script) {
-      script = document.createElement("script");
-      script.id = scriptId;
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    }
-
-    // Call initWidget via turnstile.ready() if available, or poll safely
-    if (window.turnstile && typeof window.turnstile.ready === "function") {
-      window.turnstile.ready(initWidget);
-    } else {
-      const interval = setInterval(() => {
-        if (window.turnstile) {
-          clearInterval(interval);
-          if (typeof window.turnstile.ready === "function") {
-            window.turnstile.ready(initWidget);
-          } else {
-            initWidget();
-          }
+    // Load the script and render directly once ready
+    loadTurnstileScript()
+      .then(() => {
+        if (isMounted) {
+          initWidget();
         }
-      }, 100);
+      })
+      .catch((err) => {
+        console.warn("Turnstile script load error:", err);
+      });
 
-      // Local dev safety fallback timeout
-      const fallbackTimer = setTimeout(() => {
-        clearInterval(interval);
-        if ((import.meta.env.DEV || isLocalhost) && !renderedRef.current) {
-          setVerified(true);
-          onVerifyRef.current(CLOUDFLARE_ALWAYS_PASS_TEST_KEY);
-        }
-      }, 3500);
-
-      return () => {
-        isMounted = false;
-        clearInterval(interval);
-        clearTimeout(fallbackTimer);
-        if (widgetIdRef.current && window.turnstile) {
-          try {
-            window.turnstile.remove(widgetIdRef.current);
-          } catch {
-            // ignore cleanup errors
-          }
-        }
-      };
-    }
+    // Local dev safety fallback timeout
+    const fallbackTimer = setTimeout(() => {
+      if ((import.meta.env.DEV || isLocalhost) && !renderedRef.current && isMounted) {
+        setVerified(true);
+        onVerifyRef.current(CLOUDFLARE_ALWAYS_PASS_TEST_KEY);
+      }
+    }, 3500);
 
     return () => {
       isMounted = false;
+      clearTimeout(fallbackTimer);
       if (widgetIdRef.current && window.turnstile) {
         try {
           window.turnstile.remove(widgetIdRef.current);
         } catch {
           // ignore cleanup errors
         }
+        widgetIdRef.current = null;
       }
+      renderedRef.current = false;
     };
   }, [effectiveSiteKey, action, isLocalhost]);
 

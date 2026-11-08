@@ -1,1 +1,0 @@
-import{B as e,H as t,j as n}from"./dist-DlCgP6Xt.js";import{i as r}from"./OverlayProvider-lvdc95zw.js";var i=t(e(),1);function a(e){let t=r();return i.useCallback(n=>t.navigate({...n,from:n.from??e?.from}),[e?.from,t])}var o=n(`search`,[[`path`,{d:`m21 21-4.34-4.34`,key:`14j7rj`}],[`circle`,{cx:`11`,cy:`11`,r:`8`,key:`4ej97u`}]]);export{a as n,o as t};

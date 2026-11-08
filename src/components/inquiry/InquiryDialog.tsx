@@ -561,7 +561,6 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
 
                       <div className="pt-2">
                         <TurnstileWidget
-                          siteKey="0x4AAAAAAF4N2BizrqzpRRny"
                           onVerify={(token) => {
                             setTurnstileToken(token);
                             setValue("turnstileToken", token);
