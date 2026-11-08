@@ -2,7 +2,16 @@ import { WhatsAppIcon } from "@/components/brand/WhatsAppIcon";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller, type FieldPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, Check, Mail, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Mail,
+  X,
+  ShieldCheck,
+  AlertCircle,
+  FileText,
+} from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { CATEGORIES, CATEGORY_MAP } from "@/config/categories";
 import { BUSINESS } from "@/config/business";
@@ -92,6 +101,15 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
     formState: { errors },
   } = form;
 
+  // Determine localhost / dev environment for test key auto-pass
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname === "::1");
+
+  const isTurnstileReady = Boolean(turnstileToken) || import.meta.env.DEV || isLocalhost;
+
   // Apply session draft + incoming context each time the dialog is opened from a CTA.
   useEffect(() => {
     const draft = loadDraft();
@@ -99,6 +117,8 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
     reset(merged);
     setStep(prefill.intent ? 1 : 0);
     setStatus("idle");
+    setTurnstileToken("");
+    setError("");
   }, [prefillKey, prefill, reset]);
 
   const values = watch();
@@ -130,16 +150,34 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
     if (await trigger(STEPS[step]?.fields ?? [])) setStep((s) => Math.min(s + 1, STEPS.length - 1));
   };
 
-  const onSubmit = handleSubmit(async (data) => {
+  const executeSubmit = async () => {
+    // HARD GATE: Never allow submission unless strictly on the final Review step
+    if (step !== STEPS.length - 1) {
+      void next();
+      return;
+    }
+
+    // Trigger validation for all fields
+    const isValid = await trigger();
+    if (!isValid) return;
+
+    if (!isTurnstileReady) {
+      setError("Please complete the security verification challenge before submitting.");
+      return;
+    }
+
     setStatus("submitting");
     setError("");
+
+    const currentValues = form.getValues();
     const submissionData: InquiryData = {
-      ...data,
+      ...currentValues,
       turnstileToken:
         turnstileToken ||
-        data.turnstileToken ||
-        (import.meta.env.DEV ? "1x00000000000000000000AA" : ""),
+        currentValues.turnstileToken ||
+        (import.meta.env.DEV || isLocalhost ? "1x00000000000000000000AA" : ""),
     };
+
     const res = await submitInquiry(submissionData);
     if (res.ok) {
       setMode(res.mode);
@@ -149,7 +187,7 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
       setError(res.error);
       setStatus("error");
     }
-  });
+  };
 
   const text = inquiryToText(values, labels);
   const waHref = `https://wa.me/${BUSINESS.whatsappNumber}?text=${encodeURIComponent(text)}`;
@@ -232,7 +270,23 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
               </div>
             ) : (
               <form
-                onSubmit={onSubmit}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (step < STEPS.length - 1) {
+                    void next();
+                  } else {
+                    void executeSubmit();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.target as HTMLElement)?.tagName === "INPUT") {
+                    e.preventDefault();
+                    if (step < STEPS.length - 1) {
+                      void next();
+                    }
+                  }
+                }}
                 className="flex min-h-0 min-w-0 flex-1 flex-col"
                 noValidate
                 // Declarative WebMCP form annotations
@@ -538,45 +592,159 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
                   {step === 4 && (
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="inq-notes">
-                          Anything else? <span className="text-muted-foreground">(optional)</span>
+                        <Label htmlFor="inq-notes" className="font-semibold text-olive text-sm">
+                          Anything else?{" "}
+                          <span className="font-normal text-muted-foreground">(optional)</span>
                         </Label>
                         <Textarea
                           id="inq-notes"
-                          rows={3}
+                          rows={2}
                           className="mt-1.5"
                           placeholder="Budget range, packaging preferences, a reference product…"
                           toolparamdescription="Additional project details, custom branding requirements, packaging notes"
                           {...register("notes")}
                         />
                       </div>
-                      <div className="rounded-2xl bg-muted/60 p-4">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Summary
-                        </p>
-                        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-slate">
-                          {text.split("\n").slice(1).join("\n")}
-                        </pre>
+
+                      {/* Structured Review Summary */}
+                      <div className="rounded-2xl border border-border bg-muted/40 p-4">
+                        <div className="flex items-center justify-between pb-3 border-b border-border/70 mb-3">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-olive flex items-center gap-1.5">
+                            <FileText className="size-3.5" />
+                            <span>Enquiry Summary</span>
+                          </p>
+                          <span className="text-[0.7rem] text-muted-foreground font-medium">
+                            Step 5 of 5: Review &amp; Confirm
+                          </span>
+                        </div>
+
+                        <div className="grid gap-2.5 text-xs sm:grid-cols-2">
+                          <div>
+                            <span className="text-muted-foreground block text-[0.7rem]">
+                              Purpose:
+                            </span>
+                            <span className="font-medium text-olive">
+                              {INTENTS.find((i) => i.value === values.intent)?.label ||
+                                values.intent ||
+                                "Corporate Gifting"}
+                            </span>
+                          </div>
+                          {values.quantity && (
+                            <div>
+                              <span className="text-muted-foreground block text-[0.7rem]">
+                                Estimated Quantity:
+                              </span>
+                              <span className="font-medium text-olive">
+                                {values.quantity} units
+                              </span>
+                            </div>
+                          )}
+                          {values.date && (
+                            <div>
+                              <span className="text-muted-foreground block text-[0.7rem]">
+                                Target Delivery:
+                              </span>
+                              <span className="font-medium text-olive">{values.date}</span>
+                            </div>
+                          )}
+                          <div>
+                            <span className="text-muted-foreground block text-[0.7rem]">
+                              Contact:
+                            </span>
+                            <span className="font-medium text-olive">
+                              {values.name} {values.company ? `(${values.company})` : ""}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground block text-[0.7rem]">
+                              Email / Phone:
+                            </span>
+                            <span className="font-medium text-olive">
+                              {values.email} &bull; {values.phone}
+                            </span>
+                          </div>
+                          {values.location && (
+                            <div>
+                              <span className="text-muted-foreground block text-[0.7rem]">
+                                Delivery Location:
+                              </span>
+                              <span className="font-medium text-olive">{values.location}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {selectedProducts.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-border/70">
+                            <span className="text-muted-foreground block text-[0.7rem] mb-1.5">
+                              Selected Items ({selectedProducts.length}):
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedProducts.map((p) => (
+                                <span
+                                  key={p.sku}
+                                  className="inline-flex items-center rounded-lg bg-card px-2 py-1 text-[0.75rem] font-medium text-olive border border-border"
+                                >
+                                  {p.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="pt-2">
+                      {/* Security Verification Card */}
+                      <div className="rounded-2xl border border-border bg-card p-4 shadow-xs">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <ShieldCheck
+                              className={cn(
+                                "size-4",
+                                isTurnstileReady ? "text-emerald-700" : "text-olive",
+                              )}
+                            />
+                            <span className="text-xs font-semibold uppercase tracking-wider text-olive">
+                              Security Verification
+                            </span>
+                          </div>
+                          {isTurnstileReady ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[0.7rem] font-semibold text-emerald-800 border border-emerald-200">
+                              <Check className="size-3" /> Verified
+                            </span>
+                          ) : (
+                            <span className="text-[0.7rem] text-muted-foreground animate-pulse">
+                              Verifying human visitor…
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Cloudflare Turnstile confirms your session to keep our corporate gifting
+                          desk secure.
+                        </p>
+
                         <TurnstileWidget
                           onVerify={(token) => {
                             setTurnstileToken(token);
                             setValue("turnstileToken", token);
+                            setError("");
                           }}
                           onExpire={() => {
                             setTurnstileToken("");
                             setValue("turnstileToken", "");
                           }}
-                          onError={(err) => console.warn("Turnstile widget error:", err)}
+                          onError={(err) => {
+                            console.warn("Turnstile widget error:", err);
+                          }}
                         />
                       </div>
 
                       {status === "error" && (
-                        <p className="text-sm text-destructive" role="alert">
-                          {error}
-                        </p>
+                        <div
+                          className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive flex items-start gap-2"
+                          role="alert"
+                        >
+                          <AlertCircle className="size-4 shrink-0 mt-0.5" />
+                          <span>{error}</span>
+                        </div>
                       )}
                     </div>
                   )}
@@ -584,26 +752,40 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
 
                 <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-border bg-card px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-4 md:px-7">
                   <Button
+                    key="inquiry-btn-back"
                     type="button"
                     variant="ghost"
                     onClick={() => setStep((s) => Math.max(0, s - 1))}
-                    disabled={step === 0}
+                    disabled={step === 0 || status === "submitting"}
                   >
                     <ArrowLeft /> Back
                   </Button>
                   {step < STEPS.length - 1 ? (
-                    <Button type="button" size="lg" onClick={next}>
+                    <Button
+                      key="inquiry-btn-continue"
+                      type="button"
+                      size="lg"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        void next();
+                      }}
+                    >
                       Continue <ArrowRight />
                     </Button>
                   ) : (
                     <Button
-                      type="submit"
+                      key="inquiry-btn-submit"
+                      type="button"
                       size="lg"
-                      disabled={status === "submitting"}
-                      className="min-w-36"
+                      disabled={status === "submitting" || !isTurnstileReady}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        void executeSubmit();
+                      }}
+                      className="min-w-44"
                     >
                       {status === "submitting" ? (
-                        <MarkLoader size={20} label="Submitting" />
+                        <MarkLoader size={20} label="Submitting..." />
                       ) : (
                         <>
                           Submit enquiry <Check />

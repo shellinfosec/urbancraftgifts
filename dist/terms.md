@@ -5,4 +5,3 @@
 3. **Payment Terms:** Standard B2B terms require 50% advance upon order confirmation and remaining balance against dispatch or delivery as mutually agreed.
 4. **Transit & Insurance:** All consignments are packed in protective export-grade cartons. Transit insurance is available upon request.
 5. **Cancellations:** Due to personalized corporate branding, orders cannot be cancelled once branding production has begun.
-

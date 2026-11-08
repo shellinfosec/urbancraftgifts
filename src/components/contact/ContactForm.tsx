@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Send, AlertCircle, MessageSquare, Copy, CheckCheck } from "lucide-react";
+import {
+  Check,
+  Send,
+  AlertCircle,
+  MessageSquare,
+  Copy,
+  CheckCheck,
+  ShieldCheck,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   contactFormSchema,
   submitContactForm,
@@ -36,6 +45,13 @@ export function ContactForm({ className = "" }: { className?: string }) {
   const [leadId, setLeadId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [copied, setCopied] = useState<boolean>(false);
+
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname === "::1");
+  const isTurnstileReady = Boolean(turnstileToken) || import.meta.env.DEV || isLocalhost;
 
   useEffect(() => {
     setRenderedAt(Date.now());
@@ -353,7 +369,29 @@ export function ContactForm({ className = "" }: { className?: string }) {
         </div>
 
         {/* Security: Cloudflare Turnstile */}
-        <div className="pt-1">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck
+                className={cn("size-4", isTurnstileReady ? "text-emerald-700" : "text-olive")}
+              />
+              <span className="text-xs font-semibold uppercase tracking-wider text-olive">
+                Security Verification
+              </span>
+            </div>
+            {isTurnstileReady ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[0.7rem] font-semibold text-emerald-800 border border-emerald-200">
+                <Check className="size-3" /> Verified
+              </span>
+            ) : (
+              <span className="text-[0.7rem] text-muted-foreground animate-pulse">
+                Verifying human visitor…
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Cloudflare Turnstile confirms your session to keep our corporate desk secure.
+          </p>
           <TurnstileWidget
             onVerify={(token) => setTurnstileToken(token)}
             onExpire={() => setTurnstileToken("")}
@@ -366,7 +404,7 @@ export function ContactForm({ className = "" }: { className?: string }) {
             type="submit"
             size="lg"
             className="w-full sm:w-auto min-w-[190px]"
-            disabled={status === "submitting"}
+            disabled={status === "submitting" || !isTurnstileReady}
           >
             {status === "submitting" ? (
               <>

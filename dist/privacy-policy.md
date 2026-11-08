@@ -6,4 +6,3 @@ Urban Craft & Co. is committed to protecting the privacy of our corporate client
 2. **Data Usage:** Contact information is never sold, traded, or shared with third parties except authorized logistics partners for delivery fulfillment.
 3. **Security:** All form submissions are protected with Cloudflare Turnstile bot verification and TLS encryption in transit.
 4. **Contact:** For data inquiries or deletions, contact info@urbancraftgifts.com.
-
