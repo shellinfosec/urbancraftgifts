@@ -345,13 +345,27 @@ npm run build
 
 ---
 
-## 6. cPanel Static SPA Deployment Architecture
+## 6. cPanel Hybrid Deployment Architecture (Static Frontend & Node.js API)
 
-- **Domain**: `demo.urbancraftgifts.com`
-- **GitHub Repository**: `https://github.com/shellinfosec/urbancraft-demo` (`main` branch)
-- **Deployment Mode**: Pure Static SPA on Apache (`dist/` folder) without Phusion Passenger or Node.js runtime overhead.
-- **Prerender Pipeline**: `npm run build` runs `vite build` followed by `scripts/prerender-spa.mjs`, which prerenders 29+ static routes (`/`, `/catalogue`, `/products`, `/categories/*`, etc.) and packages them into `dist/` along with `dist/.htaccess` and all asset bundles.
-- **cPanel Deployment**: `.cpanel.yml` deploys the committed `dist/` folder to `/home/urbancraftgifts/demo.urbancraftgifts.com` via `/bin/cp -R dist/. $DEPLOYPATH/`.
-- **Apache Rewrite**: `dist/.htaccess` routes existing files/directories directly and fallbacks all client routes to `/index.html` for instant TanStack Router hydration.
+- **Domain**: `urbancraftgifts.com` (and `demo.urbancraftgifts.com`)
+- **GitHub Repository**: `https://github.com/shellinfosec/urbancraftgifts` (`main` branch)
+- **Frontend Deployment**: Pre-compiled Static SPA on Apache (`dist/` folder deployed to `/home/urbancraftgifts/public_html`).
+- **Backend API Deployment**: Node.js Express server running under Phusion Passenger on cPanel (`/home/urbancraftgifts/urbancraftgifts-api`), bootstrapped via `cpanel-start.cjs` to eliminate 503 errors.
+- **Prerender Pipeline**: `npm run build` executes `vite build` followed by `scripts/prerender-spa.mjs`, prerendering all 29 static routes into `dist/` along with `.htaccess` and all asset bundles.
+- **cPanel Deployment Manifest (`.cpanel.yml`)**:
+  - Initializes directories (`public_html`, `urbancraftgifts-api`, `data`, `logs`, `tmp`, `backups`).
+  - Safely backs up active runtime lead data before deployment: `cp -rn data/. backups/data-latest/`.
+  - Deploys static frontend to `public_html` (and syncs `demo.urbancraftgifts.com`).
+  - Deploys backend API: `server.js`, `cpanel-start.cjs`, `server-package.json` -> `package.json`.
+  - Safely copies `.env` if not present (`cp -n .env`).
+  - Touches `tmp/restart.txt` to trigger Phusion Passenger live reload without server restart.
+- **Lead Storage & Telemetry**:
+  - Zero-loss atomic monthly rotating lead files (`november-2026-leads.json` and `.jsonl`) with sequential write queue (`enqueueWrite`).
+  - Captures full telemetry: client IP, Geolocation (via `ip-api` / Cloudflare headers), ISP network, device, OS, browser, referrer, and IST timestamps (`Asia/Kolkata`, UTC+05:30).
+  - Multi-layer bot defense: Cloudflare Turnstile server verification + silent honeypot trap (`hp_website`, `hp_email`) + timing anomaly check (< 750ms).
+- **Outbound Email Notifications**:
+  - Dispatched via SSL SMTP (`s782.bom1.mysecurecloudhost.com:465`) from `notifications@urbancraftgifts.com`.
+  - Minimalistic, light-themed branded HTML email matching Urban Craft aesthetics (sand/ivory `#FAF8F5`, olive `#2F3A2E`, brown `#8C6D58`).
+  - Direct action buttons for "Reply via Email" and "Message on WhatsApp".
 
 This file serves as the definitive reference for the Urban Craft & Co. architecture, component relationships, data flow, and codebase conventions.

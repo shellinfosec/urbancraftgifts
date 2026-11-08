@@ -1,5 +1,37 @@
 ---
+# ----------------------------------------------------------------------
+# Urban Craft & Co. - cPanel Automated Deployment Manifest
+# Domain: urbancraftgifts.com
+# Repository: https://github.com/shellinfosec/urbancraftgifts
+# ----------------------------------------------------------------------
+
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/urbancraftgifts/demo.urbancraftgifts.com
-    - /bin/cp -R dist/. $DEPLOYPATH/
+    # Target directory paths
+    - export FRONTENDPATH=/home/urbancraftgifts/public_html
+    - export APIPATH=/home/urbancraftgifts/urbancraftgifts-api
+
+    # 1. Directory Structure Initialization
+    - /bin/mkdir -p $FRONTENDPATH
+    - /bin/mkdir -p $APIPATH
+    - /bin/mkdir -p $APIPATH/data
+    - /bin/mkdir -p $APIPATH/logs
+    - /bin/mkdir -p $APIPATH/tmp
+    - /bin/mkdir -p $APIPATH/backups
+
+    # 2. Data Resilience: Safe backup of active runtime lead data before reload
+    - if [ -d "$APIPATH/data" ]; then /bin/cp -rn "$APIPATH/data/." "$APIPATH/backups/data-latest/" 2>/dev/null || true; fi
+
+    # 3. Deploy Pre-compiled Static Frontend (Zero cPanel CPU build load)
+    - /bin/cp -a dist/. $FRONTENDPATH/
+    - if [ -f "public/favicon.ico" ]; then /bin/cp -f public/favicon.ico $FRONTENDPATH/favicon.ico; fi
+    - if [ -d "/home/urbancraftgifts/demo.urbancraftgifts.com" ]; then /bin/cp -a dist/. /home/urbancraftgifts/demo.urbancraftgifts.com/; fi
+
+    # 4. Deploy Node.js API Backend
+    - /bin/cp -f server.js $APIPATH/
+    - /bin/cp -f cpanel-start.cjs $APIPATH/
+    - /bin/cp -f server-package.json $APIPATH/package.json
+    - if [ -f ".env" ]; then /bin/cp -n .env $APIPATH/.env 2>/dev/null || true; fi
+
+    # 5. Phusion Passenger Live Application Reload
+    - /bin/touch $APIPATH/tmp/restart.txt || true

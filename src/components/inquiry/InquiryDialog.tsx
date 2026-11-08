@@ -48,6 +48,8 @@ const EMPTY: InquiryData = {
   email: "",
   phone: "",
   notes: "",
+  turnstileToken: "",
+  hp_website: "",
 };
 
 function loadDraft(): Partial<InquiryData> {

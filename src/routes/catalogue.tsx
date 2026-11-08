@@ -105,10 +105,10 @@ interface PageChunk {
 interface SpreadItem {
   id: string;
   type: "cover" | "spread" | "backCover";
-  leftChunk?: PageChunk;
-  leftIndex?: number;
-  rightChunk?: PageChunk;
-  rightIndex?: number;
+  leftChunk?: PageChunk | undefined;
+  leftIndex?: number | undefined;
+  rightChunk?: PageChunk | undefined;
+  rightIndex?: number | undefined;
   label: string;
 }
 
@@ -189,6 +189,7 @@ export function CataloguePage() {
 
     for (let i = 0; i < pageChunks.length; i += 2) {
       const left = pageChunks[i];
+      if (!left) continue;
       const right = pageChunks[i + 1];
       const leftPageNum = i + 2;
       const rightPageNum = right ? i + 3 : null;
@@ -1120,7 +1121,8 @@ export function CataloguePage() {
                     {activePageIndex === 0 && renderFrontCover()}
                     {activePageIndex > 0 &&
                       activePageIndex < totalPages - 1 &&
-                      renderInteriorPage(pageChunks[activePageIndex - 1], activePageIndex - 1)}
+                      pageChunks[activePageIndex - 1] &&
+                      renderInteriorPage(pageChunks[activePageIndex - 1]!, activePageIndex - 1)}
                     {activePageIndex === totalPages - 1 && renderBackCover()}
                   </motion.div>
                 </AnimatePresence>

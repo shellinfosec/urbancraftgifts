@@ -14,7 +14,7 @@ export default defineConfig(async ({ command }) => {
     tailwindcss(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tanstackStart({
-      server: { entry: "server" },
+      server: { entry: "./src/server.ts" },
     }),
     viteReact(),
   ];
@@ -24,6 +24,7 @@ export default defineConfig(async ({ command }) => {
       const { nitro } = await import("nitro/vite");
       plugins.push(
         nitro({
+          serverEntry: path.resolve(__dirname, "src/server.ts"),
           prerender: {
             crawlLinks: true,
             routes: [
@@ -52,6 +53,14 @@ export default defineConfig(async ({ command }) => {
 
   return {
     plugins,
+    server: {
+      proxy: {
+        "/api": {
+          target: "http://127.0.0.1:3001",
+          changeOrigin: true,
+        },
+      },
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

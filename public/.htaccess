@@ -11,6 +11,10 @@
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
+  # Exclude backend API routes from SPA index.html fallback (routes to Node / Passenger)
+  RewriteCond %{REQUEST_URI} ^/api [NC]
+  RewriteRule ^ - [L]
+
   # If an html file exists matching the exact path (e.g. /catalogue -> /catalogue.html)
   RewriteCond %{DOCUMENT_ROOT}/$1.html -f
   RewriteRule ^(.*)$ $1.html [L]

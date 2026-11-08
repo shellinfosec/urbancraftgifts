@@ -2,7 +2,7 @@ import { WhatsAppIcon } from "@/components/brand/WhatsAppIcon";
 import { createFileRoute } from "@tanstack/react-router";
 import { Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import { EditorialHero } from "@/components/common/EditorialHero";
-import { InlineInquiry } from "@/components/home/InlineInquiry";
+import { ContactForm } from "@/components/contact/ContactForm";
 import { useOverlays } from "@/components/providers/OverlayProvider";
 import { Button } from "@/components/ui/button";
 import { BUSINESS } from "@/config/business";
@@ -47,7 +47,7 @@ function ContactPage() {
   return (
     <>
       <EditorialHero page="contact" />
-      <section className="container-site grid gap-8 pb-20 lg:grid-cols-[1fr_1.2fr]">
+      <section className="container-site grid gap-8 pb-12 lg:grid-cols-[1fr_1.2fr]">
         <div className="rounded-3xl border border-border bg-card p-6 md:p-8">
           <ul className="space-y-5">
             {rows.map(({ icon: Icon, label, value, subvalue, href }) => (
@@ -80,7 +80,7 @@ function ContactPage() {
           </ul>
           <div className="mt-8 flex flex-col gap-2 sm:flex-row">
             <Button size="lg" onClick={() => openInquiry()}>
-              <Send /> Open enquiry form
+              <Send /> Open quote wizard
             </Button>
             <Button size="lg" variant="whatsapp" asChild>
               <a href={whatsappUrl({ kind: "general" })} target="_blank" rel="noopener noreferrer">
@@ -99,11 +99,10 @@ function ContactPage() {
           />
         </div>
       </section>
-      <InlineInquiry
-        id="contact-enquiry"
-        heading="Write to us here"
-        intro="Fill this in and it opens WhatsApp or your mail app with everything included - no account needed."
-      />
+
+      <section className="container-site pb-20">
+        <ContactForm />
+      </section>
     </>
   );
 }

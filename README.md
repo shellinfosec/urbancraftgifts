@@ -2,16 +2,16 @@
 
 <div align="center">
 
-[![Domain](https://img.shields.io/badge/Domain-demo.urbancraftgifts.com-2F3A2E?style=for-the-badge&logo=google-chrome&logoColor=D4AF37)](https://demo.urbancraftgifts.com)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-shellinfosec%2Furbancraft--demo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/shellinfosec/urbancraft-demo)
-[![cPanel Deployment](https://img.shields.io/badge/cPanel-Static%20SPA%20Deploy-FF6C2C?style=for-the-badge&logo=cpanel&logoColor=white)](https://cpanel.net)
+[![Domain](https://img.shields.io/badge/Domain-urbancraftgifts.com-2F3A2E?style=for-the-badge&logo=google-chrome&logoColor=D4AF37)](https://urbancraftgifts.com)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-shellinfosec%2Furbancraftgifts-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/shellinfosec/urbancraftgifts)
+[![cPanel Deployment](https://img.shields.io/badge/cPanel-Automated%20Deploy-FF6C2C?style=for-the-badge&logo=cpanel&logoColor=white)](https://cpanel.net)
 [![React 19](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![Apache](https://img.shields.io/badge/Server-Apache%20Static%20SPA-D22128?style=for-the-badge&logo=apache&logoColor=white)](https://httpd.apache.org)
+[![Node.js API](https://img.shields.io/badge/API-Express%20%2B%20Nodemailer-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.2-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 
-**Premium corporate gifting studio web application and interactive 2026 catalogue lookbook with bespoke branding, bulk order coordination, and instant zero-overhead cPanel static deployment.**
+**Premium corporate gifting studio web application, interactive 2026 catalogue lookbook, secure validated contact form module, and automated cPanel deployment with Phusion Passenger API backend.**
 
-[Live Demo](https://demo.urbancraftgifts.com) • [Deployment Guide](#-cpanel-deployment-guide) • [Architecture](#-architecture--deployment-pipeline) • [Local Development](#-local-development)
+[Live Website](https://urbancraftgifts.com) • [Deployment Guide](#-cpanel-deployment-guide) • [Architecture](#-architecture--deployment-pipeline) • [Local Development](#-local-development)
 
 </div>
 
@@ -19,16 +19,16 @@
 
 ## 📌 Project & Deployment Variables
 
-| Variable | Configured Value |
-| :--- | :--- |
-| **Project Domain** | `demo.urbancraftgifts.com` |
-| **GitHub Repository** | `https://github.com/shellinfosec/urbancraft-demo` |
-| **cPanel App Root Directory** | `/home/urbancraftgifts/demo.urbancraftgifts.com` |
-| **cPanel Public HTML Directory** | `/home/urbancraftgifts/demo.urbancraftgifts.com` |
-| **Deployment Mode** | **Static SPA on Apache** (Zero Node.js/Passenger overhead) |
-| **Target Build Directory** | `dist/` |
-| **Author** | **Syed Haseeb Rizvi** (`syedhaseeb@shellinfosec.com`) |
-| **Target Branch** | `main` |
+| Variable                         | Configured Value                                           |
+| :------------------------------- | :--------------------------------------------------------- |
+| **Project Domain**               | `urbancraftgifts.com` (and `demo.urbancraftgifts.com`)      |
+| **GitHub Repository**            | `https://github.com/shellinfosec/urbancraftgifts`          |
+| **cPanel Frontend Directory**    | `/home/urbancraftgifts/public_html`                        |
+| **cPanel API Root Directory**    | `/home/urbancraftgifts/urbancraftgifts-api`                |
+| **Deployment Mode**              | **Static SPA on Apache** + **Phusion Passenger Node.js API**|
+| **Target Build Directory**       | `dist/`                                                    |
+| **Author**                       | **Syed Haseeb Rizvi** (`syedhaseeb@shellinfosec.com`)      |
+| **Target Branch**                | `main`                                                     |
 
 ---
 
@@ -46,6 +46,7 @@ graph LR
 ```
 
 ### Key Advantages of This Architecture
+
 1. **Zero cPanel Server Overhead**: No background Node.js daemons, no Phusion Passenger processes to manage, and no runtime memory consumption on your cPanel account.
 2. **Sub-second Loading Speed**: Apache delivers static HTML, WebP/PNG images, stylesheets, and JavaScript bundles directly with aggressive caching headers.
 3. **Flawless Client-Side Routing**: The deployed `dist/.htaccess` routes any non-file URLs straight to `index.html`, ensuring page reloads and deep links never trigger 404s.
@@ -58,6 +59,7 @@ graph LR
 Deploying updates to `demo.urbancraftgifts.com` requires only a single click in your cPanel dashboard:
 
 ### Step 1: Open Git™ Version Control in cPanel
+
 1. Log into your **cPanel Account**.
 2. Under **Files**, open **Git™ Version Control**.
 3. If not already configured, click **Create**:
@@ -67,6 +69,7 @@ Deploying updates to `demo.urbancraftgifts.com` requires only a single click in 
    - Click **Create**.
 
 ### Step 2: Deploy Head Commit
+
 1. In **Git™ Version Control**, click **Manage** next to `urbancraft-demo`.
 2. Select the **Pull or Deploy** tab.
 3. Click **Update from Remote** (fetches latest commits from `main`).

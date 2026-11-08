@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import { useState, useEffect, type FormEvent } from "react";
+import { Mail, Phone, MapPin, Clock, Check, Send } from "lucide-react";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { WhatsAppIcon } from "@/components/brand/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { BUSINESS } from "@/config/business";
-import { QUANTITY_RANGES } from "@/lib/inquiry-service";
+import { QUANTITY_RANGES, submitContactForm } from "@/lib/inquiry-service";
 import { Reveal } from "@/components/common/Reveal";
+import { MarkLoader } from "@/components/brand/Logo";
 
 /**
- * Inline enquiry form (no popup). Sends via WhatsApp or email with the
- * details prefilled, so nothing is lost until a backend endpoint is connected.
+ * Inline enquiry form. Connects directly to the server API and also
+ * provides instantaneous WhatsApp follow-up.
  */
 export function InlineInquiry({
   id = "quick-enquiry",
@@ -27,7 +28,15 @@ export function InlineInquiry({
   const [contact, setContact] = useState("");
   const [quantity, setQuantity] = useState("");
   const [message, setMessage] = useState("");
+  const [hpWebsite, setHpWebsite] = useState("");
+  const [renderedAt, setRenderedAt] = useState(0);
   const [touched, setTouched] = useState(false);
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [leadId, setLeadId] = useState("");
+
+  useEffect(() => {
+    setRenderedAt(Date.now());
+  }, []);
 
   const valid = name.trim().length >= 2 && contact.trim().length >= 5 && message.trim().length >= 5;
 
@@ -46,11 +55,35 @@ export function InlineInquiry({
     `Enquiry from ${name.trim() || "website"}`,
   )}&body=${encodeURIComponent(text)}`;
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     setTouched(true);
     if (!valid) return;
-    window.open(waHref, "_blank", "noopener,noreferrer");
+
+    setStatus("submitting");
+
+    // Determine if contact is email or phone
+    const isEmail = contact.includes("@");
+    const payload = {
+      name: name.trim(),
+      email: isEmail ? contact.trim() : "not-provided@urbancraftgifts.com",
+      phone: !isEmail ? contact.trim() : "+919266129456",
+      quantity,
+      message: message.trim(),
+      purpose: "Quick Website Enquiry",
+      hp_website: hpWebsite,
+      turnstileToken: import.meta.env.DEV ? "1x00000000000000000000AA" : undefined,
+      _renderedAt: renderedAt,
+    };
+
+    const res = await submitContactForm(payload);
+
+    if (res.ok) {
+      setLeadId(res.id || "");
+      setStatus("success");
+    } else {
+      setStatus("error");
+    }
   };
 
   return (
@@ -121,89 +154,149 @@ export function InlineInquiry({
           </ul>
         </Reveal>
         <Reveal delay={0.1}>
-          <form onSubmit={submit} noValidate className="grid gap-5">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor={`${id}-name`}>Your name</Label>
-                <Input
-                  id={`${id}-name`}
-                  autoComplete="name"
-                  className="mt-2 h-12 text-base md:text-sm"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  aria-invalid={touched && name.trim().length < 2}
-                />
-              </div>
-              <div>
-                <Label htmlFor={`${id}-contact`}>Email or phone</Label>
-                <Input
-                  id={`${id}-contact`}
-                  autoComplete="email"
-                  className="mt-2 h-12 text-base md:text-sm"
-                  value={contact}
-                  onChange={(e) => setContact(e.target.value)}
-                  aria-invalid={touched && contact.trim().length < 5}
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor={`${id}-qty`}>
-                Approximate quantity <span className="text-muted-foreground">(optional)</span>
-              </Label>
-              <select
-                id={`${id}-qty`}
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                className="mt-2 h-12 w-full rounded-md border border-input bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
-              >
-                <option value="">Not sure yet</option>
-                {QUANTITY_RANGES.map((q) => (
-                  <option key={q} value={q}>
-                    {q}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor={`${id}-msg`}>What do you have in mind?</Label>
-              <Textarea
-                id={`${id}-msg`}
-                rows={4}
-                className="mt-2 min-h-32 text-base md:text-sm"
-                placeholder="e.g. Welcome kits for 40 new joiners in March, with our logo on the bottle and notebook."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                aria-invalid={touched && message.trim().length < 5}
-              />
-            </div>
-            {touched && !valid && (
-              <p className="text-xs text-destructive" role="alert">
-                Please add your name, a way to reach you, and a line about what you need.
+          {status === "success" ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-sand/30 p-8 text-center">
+              <span className="inline-flex size-14 items-center justify-center rounded-full bg-sand text-olive">
+                <Check className="size-7" />
+              </span>
+              <h3 className="mt-4 font-display text-xl text-olive">Thank you! Enquiry received.</h3>
+              <p className="mt-2 max-w-sm text-sm text-slate">
+                We have received your details{leadId ? ` (Ref: ${leadId})` : ""}. A gifting
+                specialist will get in touch shortly.
               </p>
-            )}
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button type="submit" size="lg" className="w-full">
-                <WhatsAppIcon /> Send on WhatsApp
-              </Button>
-              <Button
-                type="button"
-                size="lg"
-                variant="outline"
-                className="w-full"
-                disabled={!valid}
-                onClick={() => {
-                  setTouched(true);
-                  if (valid) window.location.href = mailHref;
-                }}
-              >
-                <Mail /> Send by email
-              </Button>
+              <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+                <Button asChild variant="whatsapp" size="lg">
+                  <a href={waHref} target="_blank" rel="noopener noreferrer">
+                    <WhatsAppIcon /> Also connect on WhatsApp
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    setStatus("idle");
+                    setName("");
+                    setContact("");
+                    setMessage("");
+                  }}
+                >
+                  Send another
+                </Button>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Opens WhatsApp with your message prefilled - nothing is sent until you press send
-              there.
-            </p>
-          </form>
+          ) : (
+            <form onSubmit={submit} noValidate className="grid gap-5">
+              {/* Anti-bot Honeypot */}
+              <div style={{ display: "none" }} aria-hidden="true">
+                <input
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={hpWebsite}
+                  onChange={(e) => setHpWebsite(e.target.value)}
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor={`${id}-name`}>Your name</Label>
+                  <Input
+                    id={`${id}-name`}
+                    autoComplete="name"
+                    className="mt-2 h-12 text-base md:text-sm"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    aria-invalid={touched && name.trim().length < 2}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor={`${id}-contact`}>Email or phone</Label>
+                  <Input
+                    id={`${id}-contact`}
+                    autoComplete="email"
+                    className="mt-2 h-12 text-base md:text-sm"
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    aria-invalid={touched && contact.trim().length < 5}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor={`${id}-qty`}>
+                  Approximate quantity <span className="text-muted-foreground">(optional)</span>
+                </Label>
+                <select
+                  id={`${id}-qty`}
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  className="mt-2 h-12 w-full rounded-md border border-input bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
+                >
+                  <option value="">Not sure yet</option>
+                  {QUANTITY_RANGES.map((q) => (
+                    <option key={q} value={q}>
+                      {q}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label htmlFor={`${id}-msg`}>What do you have in mind?</Label>
+                <Textarea
+                  id={`${id}-msg`}
+                  rows={4}
+                  className="mt-2 min-h-32 text-base md:text-sm"
+                  placeholder="e.g. Welcome kits for 40 new joiners in March, with our logo on the bottle and notebook."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  aria-invalid={touched && message.trim().length < 5}
+                />
+              </div>
+              {touched && !valid && (
+                <p className="text-xs text-destructive" role="alert">
+                  Please add your name, a way to reach you, and a line about what you need.
+                </p>
+              )}
+              {status === "error" && (
+                <p className="text-xs text-destructive" role="alert">
+                  Could not submit online. Please click WhatsApp or Email below to send directly.
+                </p>
+              )}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  disabled={status === "submitting"}
+                >
+                  {status === "submitting" ? (
+                    <>
+                      <MarkLoader className="mr-2 size-4 animate-spin" /> Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 size-4" /> Submit Enquiry
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="whatsapp"
+                  className="w-full"
+                  onClick={() => {
+                    setTouched(true);
+                    if (valid) window.open(waHref, "_blank", "noopener,noreferrer");
+                  }}
+                >
+                  <WhatsAppIcon /> Send on WhatsApp
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Your enquiry is securely sent to our New Delhi gifting team. You can also chat
+                directly on WhatsApp.
+              </p>
+            </form>
+          )}
         </Reveal>
       </div>
     </section>

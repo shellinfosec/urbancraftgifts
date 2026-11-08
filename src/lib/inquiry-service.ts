@@ -34,35 +34,122 @@ export const inquirySchema = z.object({
     .trim()
     .regex(/^[+\d][\d\s-]{7,16}$/, "Enter a valid phone number"),
   notes: z.string().trim().max(1000).optional(),
+  // Security honeypot & turnstile
+  turnstileToken: z.string().optional(),
+  hp_website: z.string().optional(),
+  _renderedAt: z.number().optional(),
 });
 
 export type InquiryData = z.infer<typeof inquirySchema>;
 
-export type SubmitResult =
-  { ok: true; mode: "sent" | "not-configured" } | { ok: false; error: string };
+export const contactFormSchema = z.object({
+  name: z.string().trim().min(2, "Please enter your name").max(80),
+  email: z.string().trim().email("Please enter a valid work email").max(160),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[+\d][\d\s-]{7,16}$/, "Please enter a valid phone number (at least 8 digits)"),
+  company: z.string().trim().max(100).optional(),
+  purpose: z.string().optional(),
+  quantity: z.string().optional(),
+  message: z
+    .string()
+    .trim()
+    .min(5, "Please enter at least 5 characters for your message")
+    .max(2000),
+  turnstileToken: z.string().optional(),
+  hp_website: z.string().optional(),
+  _renderedAt: z.number().optional(),
+});
 
-/**
- * Adapter boundary for inquiry submission. Point INQUIRY_ENDPOINT at a real backend later;
- * the UI does not need to change. With no endpoint, we never claim the inquiry was sent.
- */
-const INQUIRY_ENDPOINT: string | undefined = import.meta.env["VITE_INQUIRY_ENDPOINT"];
+export type ContactFormData = z.infer<typeof contactFormSchema>;
+
+export type SubmitResult =
+  | { ok: true; id?: string; mode: "sent" | "not-configured"; message?: string }
+  | { ok: false; error: string };
+
+const INQUIRY_ENDPOINT: string = import.meta.env["VITE_INQUIRY_ENDPOINT"] || "/api/inquire";
+const CONTACT_ENDPOINT: string = import.meta.env["VITE_CONTACT_ENDPOINT"] || "/api/contact";
 
 export async function submitInquiry(data: InquiryData): Promise<SubmitResult> {
-  if (!INQUIRY_ENDPOINT) return { ok: true, mode: "not-configured" };
   try {
+    const payload = {
+      ...data,
+      source: "Corporate Gifting Quote Wizard",
+      pageUrl: typeof window !== "undefined" ? window.location.href : "",
+      _renderedAt: data._renderedAt || Date.now(),
+    };
+
     const res = await fetch(INQUIRY_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
-    if (!res.ok)
+
+    if (!res.ok) {
+      const errorJson = await res.json().catch(() => null);
       return {
         ok: false,
-        error: "We couldn't send your enquiry. Please try again or use WhatsApp.",
+        error:
+          errorJson?.error ||
+          "We couldn't submit your enquiry. Please try again or reach out on WhatsApp.",
       };
-    return { ok: true, mode: "sent" };
+    }
+
+    const resData = await res.json().catch(() => null);
+    return {
+      ok: true,
+      id: resData?.id,
+      mode: "sent",
+      message: resData?.message,
+    };
   } catch {
-    return { ok: false, error: "Network problem - please try again or use WhatsApp." };
+    return {
+      ok: false,
+      error: "Network connection issue - please try again or message us on WhatsApp.",
+    };
+  }
+}
+
+export async function submitContactForm(data: ContactFormData): Promise<SubmitResult> {
+  try {
+    const payload = {
+      ...data,
+      source: "Contact Us Page",
+      intent: data.purpose || "General Corporate Gifting Enquiry",
+      notes: data.message,
+      pageUrl: typeof window !== "undefined" ? window.location.href : "",
+      _renderedAt: data._renderedAt || Date.now(),
+    };
+
+    const res = await fetch(CONTACT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errorJson = await res.json().catch(() => null);
+      return {
+        ok: false,
+        error:
+          errorJson?.error ||
+          "We couldn't send your message. Please try again or contact us directly.",
+      };
+    }
+
+    const resData = await res.json().catch(() => null);
+    return {
+      ok: true,
+      id: resData?.id,
+      mode: "sent",
+      message: resData?.message,
+    };
+  } catch {
+    return {
+      ok: false,
+      error: "Network problem - please check your connection or reach out via WhatsApp.",
+    };
   }
 }
 
