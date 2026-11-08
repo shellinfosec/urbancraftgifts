@@ -9,10 +9,13 @@
   "service_documentation": "https://urbancraftgifts.com/docs/api",
   "agent_auth": {
     "register_uri": "https://urbancraftgifts.com/auth.md",
-    "supported_identity_types": ["agent-credential", "bearer-token"],
-    "credential_types": ["api_key", "oauth2_bearer"],
+    "identity_endpoint": "https://urbancraftgifts.com/auth/agent/identity",
     "claim_endpoint": "https://urbancraftgifts.com/auth/agent/claim",
-    "revocation_endpoint": "https://urbancraftgifts.com/auth/agent/revoke"
+    "revocation_uri": "https://urbancraftgifts.com/auth/agent/revoke",
+    "revocation_endpoint": "https://urbancraftgifts.com/auth/agent/revoke",
+    "identity_types_supported": ["id_jag", "agent-credential", "bearer-token"],
+    "supported_identity_types": ["id_jag", "agent-credential", "bearer-token"],
+    "credential_types_supported": ["bearer", "api_key", "oauth2_bearer"],
+    "credential_types": ["bearer", "api_key", "oauth2_bearer"]
   }
 }
-

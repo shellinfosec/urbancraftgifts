@@ -114,11 +114,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", sizes: "16x16", href: FAVICONS.png16 },
       { rel: "apple-touch-icon", sizes: "180x180", href: FAVICONS.apple180 },
       { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "api-catalog", href: "/.well-known/api-catalog" },
-      { rel: "service-desc", href: "/.well-known/ai-catalog.json", type: "application/json" },
+      { rel: "api-catalog", href: "/.well-known/api-catalog", type: "application/linkset+json" },
+      { rel: "service-desc", href: "/.well-known/openapi.json", type: "application/json" },
+      { rel: "service-doc", href: "/docs/api", type: "text/html" },
+      { rel: "describedby", href: "/auth.md", type: "text/markdown" },
+      { rel: "describedby", href: "/.well-known/ai-catalog.json", type: "application/json" },
       {
-        rel: "agent-skills",
-        href: "/.well-known/agent-skills/index.json",
+        rel: "oauth-protected-resource",
+        href: "/.well-known/oauth-protected-resource",
         type: "application/json",
       },
       {
@@ -126,7 +129,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "/.well-known/mcp/server-card.json",
         type: "application/json",
       },
-      { rel: "author-doc", href: "/auth.md", type: "text/markdown" },
+      {
+        rel: "agent-skills",
+        href: "/.well-known/agent-skills/index.json",
+        type: "application/json",
+      },
     ],
     scripts: [localBusinessJsonLd(), organizationJsonLd(), websiteJsonLd()],
   }),
@@ -141,6 +148,11 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en-IN">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{window.modelContext=window.modelContext||document.modelContext;if(!window.modelContext){var r=new Map(),ctx={registerTool:function(t){r.set(t.name,t);return Promise.resolve();},unregisterTool:function(n){r.delete(n);return Promise.resolve();},tools:r,listTools:function(){return Array.from(r.values());}};document.modelContext=ctx;window.modelContext=ctx;}var mc=document.modelContext;if(mc&&mc.registerTool){mc.registerTool({name:"search_catalogue",description:"Search corporate gifting collections across 16 categories, keywords, and specifications.",inputSchema:{type:"object",properties:{query:{type:"string",description:"Search keyword"},category:{type:"string",description:"Category slug"}}},execute:function(p){window.location.href="/catalogue?q="+(p&&p.query?p.query:"");return Promise.resolve({status:"redirecting"});}});mc.registerTool({name:"get_business_info",description:"Retrieve Urban Craft & Co. verified business contact details, address, and operational hours.",inputSchema:{type:"object",properties:{}},execute:function(){return Promise.resolve({name:"Urban Craft & Co.",phone:"+91 93117 76391",email:"notifications@urbancraftgifts.com",city:"New Delhi",country:"India"});}});mc.registerTool({name:"submit_inquiry",description:"Submit corporate bulk gifting inquiries, required quantities, and target delivery dates.",inputSchema:{type:"object",required:["name","email","phone","date"],properties:{name:{type:"string"},email:{type:"string"},phone:{type:"string"},date:{type:"string",description:"YYYY-MM-DD target date in the future"}}},execute:function(p){return fetch("/api/contact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)}).then(function(r){return r.json();});}});}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body>
         {children}

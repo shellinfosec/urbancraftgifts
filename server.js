@@ -192,27 +192,33 @@ app.use(cors({
 // 4b. RFC 8288 Link Headers & Markdown for Agents (Content Negotiation)
 // ==============================================================================
 app.use((req, res, next) => {
-  // RFC 8288 Link headers for automated agent discovery
-  res.setHeader('Link', [
-    '</.well-known/api-catalog>; rel="api-catalog"',
-    '</.well-known/ai-catalog.json>; rel="service-desc"',
-    '</.well-known/mcp/server-card.json>; rel="mcp-server-card"',
-    '</.well-known/agent-skills/index.json>; rel="agent-skills"',
-    '</auth.md>; rel="author-doc"',
-    '</docs/api>; rel="service-doc"'
-  ].join(', '));
+  // RFC 8288 Link headers for automated agent discovery (IANA registered relation types)
+  res.setHeader(
+    'Link',
+    [
+      '</.well-known/api-catalog>; rel="api-catalog"',
+      '</.well-known/openapi.json>; rel="service-desc"',
+      '</docs/api>; rel="service-doc"',
+      '</auth.md>; rel="describedby"',
+      '</.well-known/ai-catalog.json>; rel="service-desc"',
+      '</.well-known/oauth-protected-resource>; rel="oauth-protected-resource"'
+    ].join(', ')
+  );
 
-  // Markdown for Agents content negotiation
+  // Markdown for Agents content negotiation (requests with Accept: text/markdown)
   const accept = req.headers.accept || '';
   if (accept.includes('text/markdown') && req.method === 'GET' && !req.path.startsWith('/api')) {
     const publicDir = path.join(__dirname, 'public');
     const distDir = path.join(__dirname, 'dist');
-    const baseSlug = req.path === '/' ? 'index' : req.path.replace(/^\/+|\/+$/g, '').replace(/\.html$/, '');
+    const baseSlug =
+      req.path === '/'
+        ? 'index'
+        : req.path.replace(/^\/+|\/+$/g, '').replace(/\.html$/, '');
     const prospectiveMdFiles = [
       path.join(publicDir, `${baseSlug}.md`),
       path.join(distDir, `${baseSlug}.md`),
       path.join(publicDir, 'index.md'),
-      path.join(distDir, 'index.md')
+      path.join(distDir, 'index.md'),
     ];
 
     for (const mdFile of prospectiveMdFiles) {
@@ -227,6 +233,88 @@ app.use((req, res, next) => {
   }
 
   next();
+});
+
+// ==============================================================================
+// 4c. Well-Known Agent Discovery Endpoints & Direct Fallbacks
+// ==============================================================================
+const sendWellKnownFile = (res, relativePath, contentType) => {
+  const fileCandidates = [
+    path.join(__dirname, 'public', '.well-known', relativePath),
+    path.join(__dirname, 'dist', '.well-known', relativePath),
+    path.join(__dirname, '..', 'public', '.well-known', relativePath),
+  ];
+  for (const f of fileCandidates) {
+    if (fs.existsSync(f)) {
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, HEAD');
+      return res.status(200).sendFile(f);
+    }
+  }
+  return res.status(404).json({ error: `${relativePath} not found` });
+};
+
+app.get('/.well-known/oauth-protected-resource', (req, res) => {
+  sendWellKnownFile(res, 'oauth-protected-resource', 'application/json; charset=utf-8');
+});
+app.get('/.well-known/oauth-protected-resource.json', (req, res) => {
+  sendWellKnownFile(res, 'oauth-protected-resource.json', 'application/json; charset=utf-8');
+});
+
+app.get('/.well-known/oauth-authorization-server', (req, res) => {
+  sendWellKnownFile(res, 'oauth-authorization-server', 'application/json; charset=utf-8');
+});
+app.get('/.well-known/oauth-authorization-server.json', (req, res) => {
+  sendWellKnownFile(res, 'oauth-authorization-server.json', 'application/json; charset=utf-8');
+});
+
+app.get('/.well-known/openid-configuration', (req, res) => {
+  sendWellKnownFile(res, 'openid-configuration', 'application/json; charset=utf-8');
+});
+app.get('/.well-known/openid-configuration.json', (req, res) => {
+  sendWellKnownFile(res, 'openid-configuration.json', 'application/json; charset=utf-8');
+});
+
+app.get('/.well-known/api-catalog', (req, res) => {
+  sendWellKnownFile(res, 'api-catalog', 'application/linkset+json; charset=utf-8');
+});
+app.get('/.well-known/api-catalog.json', (req, res) => {
+  sendWellKnownFile(res, 'api-catalog.json', 'application/linkset+json; charset=utf-8');
+});
+
+app.get('/.well-known/ai-catalog.json', (req, res) => {
+  sendWellKnownFile(res, 'ai-catalog.json', 'application/json; charset=utf-8');
+});
+
+app.get('/.well-known/mcp/server-card.json', (req, res) => {
+  sendWellKnownFile(res, path.join('mcp', 'server-card.json'), 'application/json; charset=utf-8');
+});
+
+app.get('/.well-known/agent-skills/index.json', (req, res) => {
+  sendWellKnownFile(res, path.join('agent-skills', 'index.json'), 'application/json; charset=utf-8');
+});
+
+app.get('/.well-known/dns-aid.json', (req, res) => {
+  sendWellKnownFile(res, 'dns-aid.json', 'application/json; charset=utf-8');
+});
+
+app.get('/auth.md', (req, res) => {
+  const authCandidates = [
+    path.join(__dirname, 'public', 'auth.md'),
+    path.join(__dirname, 'dist', 'auth.md'),
+    path.join(__dirname, '..', 'public', 'auth.md'),
+  ];
+  for (const f of authCandidates) {
+    if (fs.existsSync(f)) {
+      const content = fs.readFileSync(f, 'utf8');
+      res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('x-markdown-tokens', Math.ceil(content.length / 4));
+      return res.status(200).send(content);
+    }
+  }
+  return res.status(404).send('# auth.md not found');
 });
 
 // ==============================================================================

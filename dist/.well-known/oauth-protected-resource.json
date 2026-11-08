@@ -1,0 +1,19 @@
+{
+  "resource": "https://urbancraftgifts.com",
+  "resource_identifier": "https://urbancraftgifts.com",
+  "authorization_servers": ["https://urbancraftgifts.com"],
+  "scopes_supported": ["inquiry:write", "catalogue:read", "public"],
+  "bearer_methods_supported": ["header"],
+  "resource_documentation": "https://urbancraftgifts.com/docs/api",
+  "agent_auth": {
+    "register_uri": "https://urbancraftgifts.com/auth.md",
+    "identity_endpoint": "https://urbancraftgifts.com/auth/agent/identity",
+    "claim_endpoint": "https://urbancraftgifts.com/auth/agent/claim",
+    "revocation_uri": "https://urbancraftgifts.com/auth/agent/revoke",
+    "revocation_endpoint": "https://urbancraftgifts.com/auth/agent/revoke",
+    "identity_types_supported": ["id_jag", "agent-credential", "bearer-token"],
+    "supported_identity_types": ["id_jag", "agent-credential", "bearer-token"],
+    "credential_types_supported": ["bearer", "api_key", "oauth2_bearer"],
+    "credential_types": ["bearer", "api_key", "oauth2_bearer"]
+  }
+}

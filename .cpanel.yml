@@ -30,6 +30,8 @@ deployment:
     - /bin/cp -f server.js $APIPATH/
     - /bin/cp -f cpanel-start.cjs $APIPATH/
     - /bin/cp -f server-package.json $APIPATH/package.json
+    - /bin/mkdir -p $APIPATH/public
+    - /bin/cp -a public/. $APIPATH/public/
     - if [ -f ".env" ]; then /bin/cp -n .env $APIPATH/.env 2>/dev/null || true; fi
 
     # 5. Phusion Passenger Live Application Reload

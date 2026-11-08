@@ -31,11 +31,12 @@ For high-volume enterprise integrations, ERP synchronizations, and dedicated age
 | Property                       | Value                                                                |
 | ------------------------------ | -------------------------------------------------------------------- |
 | **Issuer**                     | `https://urbancraftgifts.com`                                        |
-| **Protected Resource**         | `https://urbancraftgifts.com/api` (RFC 9728)                         |
+| **Protected Resource**         | `https://urbancraftgifts.com` (RFC 9728)                             |
+| **Resource Metadata (PRM)**    | `https://urbancraftgifts.com/.well-known/oauth-protected-resource`   |
 | **OAuth 2.0 Auth Server**      | `https://urbancraftgifts.com/.well-known/oauth-authorization-server` |
 | **OpenID Discovery**           | `https://urbancraftgifts.com/.well-known/openid-configuration`       |
-| **Supported Identity Types**   | `agent-credential`, `bearer-token`                                   |
-| **Supported Credential Types** | `api_key`, `oauth2_bearer`                                           |
+| **Supported Identity Types**   | `id_jag`, `agent-credential`, `bearer-token`                         |
+| **Supported Credential Types** | `bearer`, `api_key`, `oauth2_bearer`                                 |
 | **Registration URI**           | `https://urbancraftgifts.com/auth.md`                                |
 
 ### Registration Instructions

@@ -1,0 +1,25 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://urbancraftgifts.com/api",
+      "service-desc": [
+        {
+          "href": "https://urbancraftgifts.com/.well-known/openapi.json",
+          "type": "application/json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://urbancraftgifts.com/docs/api",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://urbancraftgifts.com/api/health",
+          "type": "application/json"
+        }
+      ]
+    }
+  ]
+}

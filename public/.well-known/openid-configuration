@@ -4,11 +4,21 @@
   "token_endpoint": "https://urbancraftgifts.com/auth/agent/token",
   "jwks_uri": "https://urbancraftgifts.com/.well-known/jwks.json",
   "response_types_supported": ["code", "token"],
+  "grant_types_supported": ["client_credentials", "authorization_code"],
   "subject_types_supported": ["public"],
   "id_token_signing_alg_values_supported": ["RS256"],
-  "grant_types_supported": ["client_credentials", "authorization_code"],
   "scopes_supported": ["openid", "profile", "email", "inquiry:write", "catalogue:read"],
   "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
-  "service_documentation": "https://urbancraftgifts.com/docs/api"
+  "service_documentation": "https://urbancraftgifts.com/docs/api",
+  "agent_auth": {
+    "register_uri": "https://urbancraftgifts.com/auth.md",
+    "identity_endpoint": "https://urbancraftgifts.com/auth/agent/identity",
+    "claim_endpoint": "https://urbancraftgifts.com/auth/agent/claim",
+    "revocation_uri": "https://urbancraftgifts.com/auth/agent/revoke",
+    "revocation_endpoint": "https://urbancraftgifts.com/auth/agent/revoke",
+    "identity_types_supported": ["id_jag", "agent-credential", "bearer-token"],
+    "supported_identity_types": ["id_jag", "agent-credential", "bearer-token"],
+    "credential_types_supported": ["bearer", "api_key", "oauth2_bearer"],
+    "credential_types": ["bearer", "api_key", "oauth2_bearer"]
+  }
 }
-

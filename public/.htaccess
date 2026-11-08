@@ -1,4 +1,4 @@
-# Apache configuration for Urban Craft & Co. (SPA, Prerendered Routes & Agent Discovery)
+# Apache configuration for Urban Craft & Co. (SPA, Prerendered Routes, Agent Discovery & Security)
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -6,35 +6,55 @@
   # Disable directory index browsing
   Options -Indexes
 
-  # Serve existing files and directories directly (e.g. assets, pdfs, images, sitemap.xml, robots.txt, .well-known)
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
-
-  # Exclude backend API routes from SPA index.html fallback (routes to Node / Passenger)
-  RewriteCond %{REQUEST_URI} ^/api [NC]
-  RewriteRule ^ - [L]
-
-  # Prevent Apache from rewriting missing static assets or Vite dev URLs to index.html (which causes MIME type errors)
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_URI} \.(js|mjs|cjs|css|png|jpg|jpeg|gif|webp|svg|woff|woff2|ttf|eot|ico|json|xml|pdf|map)$ [NC,OR]
-  RewriteCond %{REQUEST_URI} ^/@ [NC]
-  RewriteRule ^ - [R=404,L]
-
-  # Markdown for Agents content negotiation (requests with Accept: text/markdown)
+  # ----------------------------------------------------------------------------
+  # 1. Markdown for Agents Content Negotiation (MUST RUN FIRST before directory checks)
+  # ----------------------------------------------------------------------------
   RewriteCond %{HTTP:Accept} text/markdown [NC]
-  RewriteCond %{REQUEST_URI} ^/?$
-  RewriteRule ^$ index.md [L]
+  RewriteCond %{REQUEST_URI} ^/?(index\.html)?$ [NC]
+  RewriteRule ^ index.md [L]
+
+  RewriteCond %{HTTP:Accept} text/markdown [NC]
+  RewriteCond %{REQUEST_URI} ^/catalogue/?$ [NC]
+  RewriteRule ^ catalogue.md [L]
+
+  RewriteCond %{HTTP:Accept} text/markdown [NC]
+  RewriteCond %{REQUEST_URI} ^/contact/?$ [NC]
+  RewriteRule ^ contact.md [L]
 
   RewriteCond %{HTTP:Accept} text/markdown [NC]
   RewriteCond %{DOCUMENT_ROOT}/$1.md -f
   RewriteRule ^(.*)$ $1.md [L]
 
-  # If an html file exists matching the exact path (e.g. /catalogue -> /catalogue.html)
+  # ----------------------------------------------------------------------------
+  # 2. Exclude Backend API Routes (Proxies to Node / Passenger runtime)
+  # ----------------------------------------------------------------------------
+  RewriteCond %{REQUEST_URI} ^/api [NC]
+  RewriteRule ^ - [L]
+
+  # ----------------------------------------------------------------------------
+  # 3. Prevent 404 Rewrite on Missing Static Assets / Vite Dev Paths
+  # ----------------------------------------------------------------------------
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_URI} \.(js|mjs|cjs|css|png|jpg|jpeg|gif|webp|svg|woff|woff2|ttf|eot|ico|json|xml|pdf|map)$ [NC,OR]
+  RewriteCond %{REQUEST_URI} ^/@ [NC]
+  RewriteRule ^ - [R=404,L]
+
+  # ----------------------------------------------------------------------------
+  # 4. Serve Existing Static Files & Directories Directly
+  # ----------------------------------------------------------------------------
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # ----------------------------------------------------------------------------
+  # 5. Serve Prerendered Static HTML Files if Matching Route Exists
+  # ----------------------------------------------------------------------------
   RewriteCond %{DOCUMENT_ROOT}/$1.html -f
   RewriteRule ^(.*)$ $1.html [L]
 
-  # Route all non-file traffic to index.html for client-side SPA routing
+  # ----------------------------------------------------------------------------
+  # 6. SPA Fallback: Route all remaining non-file traffic to index.html
+  # ----------------------------------------------------------------------------
   RewriteRule ^ index.html [L]
 </IfModule>
 
@@ -44,14 +64,22 @@
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
 
-  # RFC 8288 Link Headers for Agent Discovery
-  Header set Link "</.well-known/api-catalog>; rel=\"api-catalog\", </.well-known/ai-catalog.json>; rel=\"service-desc\", </.well-known/mcp/server-card.json>; rel=\"mcp-server-card\", </.well-known/agent-skills/index.json>; rel=\"agent-skills\", </auth.md>; rel=\"author-doc\", </docs/api>; rel=\"service-doc\""
+  # RFC 8288 Link Headers for Agent Discovery (using single quotes so double quotes are unescaped)
+  Header always set Link '</.well-known/api-catalog>; rel="api-catalog", </.well-known/openapi.json>; rel="service-desc", </docs/api>; rel="service-doc", </auth.md>; rel="describedby", </.well-known/ai-catalog.json>; rel="service-desc", </.well-known/oauth-protected-resource>; rel="oauth-protected-resource"'
 
   # CORS open access for well-known discovery catalogs, sitemaps, and manifests
-  <FilesMatch "(ai-catalog\.json|server-card\.json|index\.json|api-catalog|openapi\.json|openid-configuration|oauth-authorization-server|oauth-protected-resource|sitemap\.xml|robots\.txt|auth\.md)">
-    Header set Access-Control-Allow-Origin "*"
-    Header set Access-Control-Allow-Methods "GET, OPTIONS, HEAD"
-    Header set Access-Control-Allow-Headers "*"
+  <FilesMatch "(ai-catalog\.json|server-card\.json|index\.json|api-catalog|openapi\.json|openid-configuration|oauth-authorization-server|oauth-protected-resource|sitemap\.xml|robots\.txt|auth\.md|dns-aid\.json)">
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, OPTIONS, HEAD"
+    Header always set Access-Control-Allow-Headers "*"
+  </FilesMatch>
+
+  # Markdown files: ensure Content-Type text/markdown, token count, and Vary header
+  <FilesMatch "\.md$">
+    ForceType "text/markdown; charset=utf-8"
+    Header always set Content-Type "text/markdown; charset=utf-8"
+    Header always set x-markdown-tokens "1250"
+    Header always set Vary "Accept"
   </FilesMatch>
 
   # Static assets aggressive caching (1 year)
@@ -66,7 +94,7 @@
   </FilesMatch>
 </IfModule>
 
-# Standard & Agentic MIME Types
+# Standard & Agentic MIME Types & Extensionless Metadata Mapping
 <IfModule mod_mime.c>
   AddType application/manifest+json .webmanifest
   AddType application/linkset+json api-catalog
@@ -75,4 +103,25 @@
   AddType image/webp .webp
   AddType image/svg+xml .svg
   AddType application/pdf .pdf
+  AddType application/json .json
 </IfModule>
+
+<Files "api-catalog">
+  ForceType application/linkset+json
+  Header always set Content-Type "application/linkset+json; charset=utf-8"
+</Files>
+
+<Files "oauth-protected-resource">
+  ForceType application/json
+  Header always set Content-Type "application/json; charset=utf-8"
+</Files>
+
+<Files "oauth-authorization-server">
+  ForceType application/json
+  Header always set Content-Type "application/json; charset=utf-8"
+</Files>
+
+<Files "openid-configuration">
+  ForceType application/json
+  Header always set Content-Type "application/json; charset=utf-8"
+</Files>
