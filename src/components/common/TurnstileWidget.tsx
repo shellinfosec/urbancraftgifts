@@ -39,14 +39,25 @@ export function TurnstileWidget({
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
   const [verified, setVerified] = useState(false);
+  const verifiedRef = useRef(false);
+
+  // Keep callback references stable across parent re-renders to prevent widget destruction
+  const onVerifyRef = useRef(onVerify);
+  onVerifyRef.current = onVerify;
+
+  const onExpireRef = useRef(onExpire);
+  onExpireRef.current = onExpire;
+
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
   useEffect(() => {
-    // If no sitekey provided or localhost dev bypass active
+    // If no sitekey provided or local development bypass active
     if (!siteKey) {
-      onVerify("cf_dev_dummy_token");
+      verifiedRef.current = true;
       setVerified(true);
+      onVerifyRef.current("cf_dev_dummy_token");
       return;
     }
 
@@ -68,30 +79,32 @@ export function TurnstileWidget({
           theme: "light",
           callback: (token: string) => {
             if (isMounted) {
+              verifiedRef.current = true;
               setVerified(true);
-              onVerify(token);
+              onVerifyRef.current(token);
             }
           },
           "expired-callback": () => {
             if (isMounted) {
+              verifiedRef.current = false;
               setVerified(false);
-              onExpire?.();
+              onExpireRef.current?.();
             }
           },
           "error-callback": (err?: string) => {
             if (isMounted) {
               // In dev mode or network error, provide fallback test token
               if (import.meta.env.DEV) {
-                onVerify("1x00000000000000000000AA");
+                verifiedRef.current = true;
                 setVerified(true);
+                onVerifyRef.current("1x00000000000000000000AA");
               } else {
-                onError?.(err);
+                onErrorRef.current?.(err);
               }
             }
           },
         });
         widgetIdRef.current = id;
-        setLoaded(true);
       } catch (err) {
         console.warn("Turnstile render error:", err);
       }
@@ -121,9 +134,10 @@ export function TurnstileWidget({
       const timeout = setTimeout(() => {
         clearInterval(checkInterval);
         // Fallback for strict offline development
-        if (import.meta.env.DEV && !verified) {
-          onVerify("1x00000000000000000000AA");
+        if (import.meta.env.DEV && !verifiedRef.current) {
+          verifiedRef.current = true;
           setVerified(true);
+          onVerifyRef.current("1x00000000000000000000AA");
         }
       }, 4000);
 
@@ -151,7 +165,7 @@ export function TurnstileWidget({
         }
       }
     };
-  }, [siteKey, onVerify, onExpire, onError]);
+  }, [siteKey]);
 
   return (
     <div className={`turnstile-container py-1 ${className}`}>

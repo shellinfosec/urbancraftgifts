@@ -197,6 +197,7 @@ app.use((req, res, next) => {
     'Link',
     [
       '</.well-known/api-catalog>; rel="api-catalog"',
+      '</.well-known/ard.json>; rel="ard"',
       '</.well-known/openapi.json>; rel="service-desc"',
       '</docs/api>; rel="service-doc"',
       '</auth.md>; rel="describedby"',
@@ -285,6 +286,10 @@ app.get('/.well-known/api-catalog.json', (req, res) => {
 
 app.get('/.well-known/ai-catalog.json', (req, res) => {
   sendWellKnownFile(res, 'ai-catalog.json', 'application/json; charset=utf-8');
+});
+
+app.get('/.well-known/ard.json', (req, res) => {
+  sendWellKnownFile(res, 'ard.json', 'application/json; charset=utf-8');
 });
 
 app.get('/.well-known/mcp/server-card.json', (req, res) => {

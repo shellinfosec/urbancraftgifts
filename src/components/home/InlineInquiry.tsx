@@ -10,6 +10,7 @@ import { BUSINESS } from "@/config/business";
 import { QUANTITY_RANGES, submitContactForm } from "@/lib/inquiry-service";
 import { Reveal } from "@/components/common/Reveal";
 import { MarkLoader } from "@/components/brand/Logo";
+import { TurnstileWidget } from "@/components/common/TurnstileWidget";
 
 /**
  * Inline enquiry form. Connects directly to the server API and also
@@ -30,6 +31,7 @@ export function InlineInquiry({
   const [message, setMessage] = useState("");
   const [hpWebsite, setHpWebsite] = useState("");
   const [renderedAt, setRenderedAt] = useState(0);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [leadId, setLeadId] = useState("");
@@ -72,7 +74,7 @@ export function InlineInquiry({
       message: message.trim(),
       purpose: "Quick Website Enquiry",
       hp_website: hpWebsite,
-      turnstileToken: import.meta.env.DEV ? "1x00000000000000000000AA" : undefined,
+      turnstileToken: turnstileToken || (import.meta.env.DEV ? "1x00000000000000000000AA" : ""),
       _renderedAt: renderedAt,
     };
 
@@ -257,6 +259,15 @@ export function InlineInquiry({
                   aria-invalid={touched && message.trim().length < 5}
                 />
               </div>
+              <div className="pt-1">
+                <TurnstileWidget
+                  siteKey="0x4AAAAAAF4N2BizrqzpRRny"
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken("")}
+                  onError={(err) => console.warn("Turnstile widget error:", err)}
+                />
+              </div>
+
               {touched && !valid && (
                 <p className="text-xs text-destructive" role="alert">
                   Please add your name, a way to reach you, and a line about what you need.
@@ -264,7 +275,8 @@ export function InlineInquiry({
               )}
               {status === "error" && (
                 <p className="text-xs text-destructive" role="alert">
-                  Could not submit online. Please click WhatsApp or Email below to send directly.
+                  Could not submit online. Please complete the security check above or click
+                  WhatsApp or Email below to send directly.
                 </p>
               )}
               <div className="grid gap-3 sm:grid-cols-2">

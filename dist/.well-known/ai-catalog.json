@@ -52,12 +52,24 @@
       "id": "urn:air:urbancraftgifts.com:skills:corporate-gifting",
       "displayName": "Corporate Gifting Agent Skill",
       "description": "Agent skill guide for consulting corporate clients on luxury corporate gifts, welcome kits, and delivery schedules.",
-      "type": "text/markdown",
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
       "url": "https://urbancraftgifts.com/.well-known/agent-skills/corporate-gifting/SKILL.md",
       "representativeQueries": [
         "How to order corporate gifts for company anniversary in Delhi NCR",
         "Best practices for corporate employee onboarding kits in India",
         "Minimum order quantity and branding options for corporate drinkware"
+      ]
+    },
+    {
+      "identifier": "urn:air:urbancraftgifts.com:skills:catalogue-browser",
+      "id": "urn:air:urbancraftgifts.com:skills:catalogue-browser",
+      "displayName": "Corporate Catalogue Browser Skill",
+      "description": "Agent skill guide for searching and recommending SKUs from the Urban Craft 366+ corporate gifts catalogue.",
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://urbancraftgifts.com/.well-known/agent-skills/catalogue-browser/SKILL.md",
+      "representativeQueries": [
+        "Search Urban Craft catalogue for employee welcome kits",
+        "Find executive 3-in-1 gift sets with vacuum flasks"
       ]
     },
     {

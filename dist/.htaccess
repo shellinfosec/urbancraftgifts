@@ -65,10 +65,10 @@
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
 
   # RFC 8288 Link Headers for Agent Discovery (using single quotes so double quotes are unescaped)
-  Header always set Link '</.well-known/api-catalog>; rel="api-catalog", </.well-known/openapi.json>; rel="service-desc", </docs/api>; rel="service-doc", </auth.md>; rel="describedby", </.well-known/ai-catalog.json>; rel="service-desc", </.well-known/oauth-protected-resource>; rel="oauth-protected-resource"'
+  Header always set Link '</.well-known/api-catalog>; rel="api-catalog", </.well-known/ard.json>; rel="ard", </.well-known/openapi.json>; rel="service-desc", </docs/api>; rel="service-doc", </auth.md>; rel="describedby", </.well-known/ai-catalog.json>; rel="service-desc", </.well-known/oauth-protected-resource>; rel="oauth-protected-resource"'
 
   # CORS open access for well-known discovery catalogs, sitemaps, and manifests
-  <FilesMatch "(ai-catalog\.json|server-card\.json|index\.json|api-catalog|openapi\.json|openid-configuration|oauth-authorization-server|oauth-protected-resource|sitemap\.xml|robots\.txt|auth\.md|dns-aid\.json)">
+  <FilesMatch "(ard\.json|ai-catalog\.json|server-card\.json|index\.json|api-catalog|openapi\.json|openid-configuration|oauth-authorization-server|oauth-protected-resource|sitemap\.xml|robots\.txt|auth\.md|dns-aid\.json)">
     Header always set Access-Control-Allow-Origin "*"
     Header always set Access-Control-Allow-Methods "GET, OPTIONS, HEAD"
     Header always set Access-Control-Allow-Headers "*"

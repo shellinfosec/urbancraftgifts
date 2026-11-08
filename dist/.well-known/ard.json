@@ -1,0 +1,88 @@
+{
+  "$schema": "https://agenticresourcediscovery.org/schemas/v1.0.0/ard-manifest.json",
+  "specVersion": "1.0.0",
+  "host": {
+    "name": "Urban Craft & Co.",
+    "domain": "urbancraftgifts.com",
+    "description": "Premium corporate gifting, custom onboarding kits, and luxury executive merchandise manufacturer in India.",
+    "homepage": "https://urbancraftgifts.com"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:urbancraftgifts.com:api:contact",
+      "id": "urn:air:urbancraftgifts.com:api:contact",
+      "displayName": "Corporate Contact & Gifting Inquiry API",
+      "description": "Submit corporate gifting proposals, RFQs, and request bulk quotation spreadsheets with logo customization options.",
+      "type": "application/json",
+      "url": "https://urbancraftgifts.com/api/contact",
+      "representativeQueries": [
+        "Request quote for 200 corporate welcome kits",
+        "Send enquiry for Diwali executive gift boxes with logo branding",
+        "Contact Urban Craft & Co. for bulk corporate merchandise quotation"
+      ]
+    },
+    {
+      "identifier": "urn:air:urbancraftgifts.com:api:inquire",
+      "id": "urn:air:urbancraftgifts.com:api:inquire",
+      "displayName": "Detailed Multi-step Proposal Builder API",
+      "description": "Submit multi-category, product-specific corporate gift proposals directly into the Urban Craft dispatch pipeline.",
+      "type": "application/json",
+      "url": "https://urbancraftgifts.com/api/inquire",
+      "representativeQueries": [
+        "Configure 3-in-1 gift set proposal with bottles and notebooks",
+        "Submit SKU selection for employee onboarding kit package",
+        "Request custom corporate gift set combination for leadership summit"
+      ]
+    },
+    {
+      "identifier": "urn:air:urbancraftgifts.com:mcp:server",
+      "id": "urn:air:urbancraftgifts.com:mcp:server",
+      "displayName": "Urban Craft & Co. Model Context Protocol (MCP) Server",
+      "description": "Official MCP server card exposing tools for catalogue search, SKU retrieval, and quotation dispatch to LLM agents.",
+      "type": "application/json",
+      "url": "https://urbancraftgifts.com/.well-known/mcp/server-card.json",
+      "representativeQueries": [
+        "Search Urban Craft catalogue for leather laptop bags",
+        "Check product specifications for GS-3IO-20 gift set",
+        "Execute corporate gifting quotation tool via Model Context Protocol"
+      ]
+    },
+    {
+      "identifier": "urn:air:urbancraftgifts.com:skills:corporate-gifting",
+      "id": "urn:air:urbancraftgifts.com:skills:corporate-gifting",
+      "displayName": "Corporate Gifting Agent Skill",
+      "description": "Agent skill guide for consulting corporate clients on luxury corporate gifts, welcome kits, and delivery schedules.",
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://urbancraftgifts.com/.well-known/agent-skills/corporate-gifting/SKILL.md",
+      "representativeQueries": [
+        "How to order corporate gifts for company anniversary in Delhi NCR",
+        "Best practices for corporate employee onboarding kits in India",
+        "Minimum order quantity and branding options for corporate drinkware"
+      ]
+    },
+    {
+      "identifier": "urn:air:urbancraftgifts.com:skills:catalogue-browser",
+      "id": "urn:air:urbancraftgifts.com:skills:catalogue-browser",
+      "displayName": "Corporate Catalogue Browser Skill",
+      "description": "Agent skill guide for searching and recommending SKUs from the Urban Craft 366+ corporate gifts catalogue.",
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://urbancraftgifts.com/.well-known/agent-skills/catalogue-browser/SKILL.md",
+      "representativeQueries": [
+        "Search Urban Craft catalogue for employee welcome kits",
+        "Find executive 3-in-1 gift sets with vacuum flasks"
+      ]
+    },
+    {
+      "identifier": "urn:air:urbancraftgifts.com:catalog:rfc9727",
+      "id": "urn:air:urbancraftgifts.com:catalog:rfc9727",
+      "displayName": "RFC 9727 API Catalog Linkset",
+      "description": "Standard linkset pointing to OpenAPI specifications, documentation, and live status endpoints.",
+      "type": "application/linkset+json",
+      "url": "https://urbancraftgifts.com/.well-known/api-catalog",
+      "representativeQueries": [
+        "Discover Urban Craft API catalog",
+        "Find OpenAPI specification for corporate gifting API"
+      ]
+    }
+  ]
+}

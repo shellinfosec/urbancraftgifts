@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MarkLoader } from "@/components/brand/Logo";
+import { TurnstileWidget } from "@/components/common/TurnstileWidget";
 import { cn } from "@/lib/utils";
 import { applyInquiryContext } from "@/lib/inquiry-context";
 import { InquiryProducts } from "./InquiryProducts";
@@ -73,6 +74,7 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [mode, setMode] = useState<"sent" | "not-configured">("not-configured");
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const form = useForm<InquiryData>({
     resolver: zodResolver(inquirySchema),
@@ -130,7 +132,15 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
 
   const onSubmit = handleSubmit(async (data) => {
     setStatus("submitting");
-    const res = await submitInquiry(data);
+    setError("");
+    const submissionData: InquiryData = {
+      ...data,
+      turnstileToken:
+        turnstileToken ||
+        data.turnstileToken ||
+        (import.meta.env.DEV ? "1x00000000000000000000AA" : ""),
+    };
+    const res = await submitInquiry(submissionData);
     if (res.ok) {
       setMode(res.mode);
       setStatus("done");
@@ -522,6 +532,22 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
                           {text.split("\n").slice(1).join("\n")}
                         </pre>
                       </div>
+
+                      <div className="pt-2">
+                        <TurnstileWidget
+                          siteKey="0x4AAAAAAF4N2BizrqzpRRny"
+                          onVerify={(token) => {
+                            setTurnstileToken(token);
+                            setValue("turnstileToken", token);
+                          }}
+                          onExpire={() => {
+                            setTurnstileToken("");
+                            setValue("turnstileToken", "");
+                          }}
+                          onError={(err) => console.warn("Turnstile widget error:", err)}
+                        />
+                      </div>
+
                       {status === "error" && (
                         <p className="text-sm text-destructive" role="alert">
                           {error}

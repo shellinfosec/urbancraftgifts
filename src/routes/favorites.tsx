@@ -33,7 +33,7 @@ export const Route = createFileRoute("/favorites")({
 
 function FavoritesSkeleton() {
   return (
-    <div className="space-y-4" aria-busy="true" aria-label="Loading favourites">
+    <div role="status" className="space-y-4" aria-busy="true" aria-label="Loading favourites">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div

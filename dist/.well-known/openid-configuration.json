@@ -22,4 +22,3 @@
     "credential_types": ["bearer", "api_key", "oauth2_bearer"]
   }
 }
-

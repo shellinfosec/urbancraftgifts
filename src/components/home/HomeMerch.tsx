@@ -144,7 +144,9 @@ export function GiftSetShowcase() {
             <button
               key={n}
               role="tab"
+              id={`tab-${n}`}
               aria-selected={n === size}
+              aria-controls={`panel-${n}-in-1-gift-sets`}
               onClick={() => setSize(n)}
               className={cn(
                 "h-10 shrink-0 rounded-full border px-5 text-sm font-semibold transition",
@@ -157,20 +159,23 @@ export function GiftSetShowcase() {
             </button>
           ))}
         </div>
-        <motion.ul
+        <motion.div
           key={slug}
+          id={`panel-${slug}`}
+          role="tabpanel"
+          aria-labelledby={`tab-${size}`}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4"
-          role="tabpanel"
         >
-          {items.map((p) => (
-            <li key={p.sku} className="flex">
-              <ProductCard product={p} className="w-full border-transparent" />
-            </li>
-          ))}
-        </motion.ul>
+          <ul className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+            {items.map((p) => (
+              <li key={p.sku} className="flex">
+                <ProductCard product={p} className="w-full border-transparent" />
+              </li>
+            ))}
+          </ul>
+        </motion.div>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button asChild variant="ivory">
             <Link to="/categories/$slug" params={{ slug }}>

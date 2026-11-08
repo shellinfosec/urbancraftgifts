@@ -115,6 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", sizes: "180x180", href: FAVICONS.apple180 },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "api-catalog", href: "/.well-known/api-catalog", type: "application/linkset+json" },
+      { rel: "ard", href: "/.well-known/ard.json", type: "application/json" },
       { rel: "service-desc", href: "/.well-known/openapi.json", type: "application/json" },
       { rel: "service-doc", href: "/docs/api", type: "text/html" },
       { rel: "describedby", href: "/auth.md", type: "text/markdown" },

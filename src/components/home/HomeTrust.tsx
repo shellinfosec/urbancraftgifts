@@ -108,6 +108,7 @@ export function TestimonialCard({ t }: { t: Testimonial }) {
       <Quote className="size-6 text-gold" />
       {t.rating && (
         <div
+          role="img"
           className="mt-3 flex gap-0.5 text-gold"
           aria-label={`${t.rating} out of 5 stars on Google`}
         >

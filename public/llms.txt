@@ -1,0 +1,44 @@
+# Urban Craft & Co.
+
+> Urban Craft & Co. is a premier corporate gifting and custom executive merchandise studio based in Sadar Bazar, Delhi NCR, India, delivering branded gift sets, employee onboarding kits, and premium lifestyle products to enterprises nationwide.
+
+## Corporate Gifting Collections
+
+- [Corporate Gifting Catalogue](https://urbancraftgifts.com/catalogue): Complete 2026 corporate gifting lookbook with 366+ luxury gift sets, drinkware, and tech accessories.
+- [2-in-1 Gift Sets](https://urbancraftgifts.com/categories/2-in-1-gift-sets): Minimalist dual-item gift combinations featuring pens, thermal flasks, and notebooks.
+- [3-in-1 Gift Sets](https://urbancraftgifts.com/categories/3-in-1-gift-sets): Popular executive trios including flasks, journals, and metal pens for client appreciation.
+- [4-in-1 Gift Sets](https://urbancraftgifts.com/categories/4-in-1-gift-sets): Themed four-piece corporate boxes for milestone and festive gifting.
+- [5-in-1 Gift Sets](https://urbancraftgifts.com/categories/5-in-1-gift-sets): High-impact five-piece executive presentation gift sets.
+- [Employee Welcome Kits](https://urbancraftgifts.com/categories/employee-welcome-kits): Custom onboarding packages tailored with branded company merchandise for new hires.
+- [Bottles & Drinkware](https://urbancraftgifts.com/categories/bottles-drinkware): Premium insulated vacuum bottles, temperature flasks, and tumblers.
+- [Leather Laptop Bags](https://urbancraftgifts.com/categories/leather-laptop-bags): Handcrafted executive leather office bags and laptop carriers.
+- [Backpacks & Duffle Bags](https://urbancraftgifts.com/categories/backpacks): Commute-ready water-resistant backpacks and weekend travel duffles.
+- [Eco-friendly Jute & Felt Bags](https://urbancraftgifts.com/categories/jute-carry-bags): Sustainable totes and event conference bags.
+
+## Inquiries & Proposals
+
+- [Online Contact & Inquiry](https://urbancraftgifts.com/contact): Direct online inquiry form with instant WhatsApp follow-up.
+- [Corporate Proposal Builder](https://urbancraftgifts.com/catalogue): Multi-step interactive corporate quote builder with product SKU selections.
+- [WhatsApp Direct Chat](https://wa.me/919266129456): Instant corporate gifting consultation desk on WhatsApp.
+
+## Developer & Agent Discovery
+
+- [Agentic Resource Discovery (ARD)](https://urbancraftgifts.com/.well-known/ard.json): Machine-readable resource discovery manifest declaring APIs, MCP tools, and skills.
+- [RFC 9727 API Catalog](https://urbancraftgifts.com/.well-known/api-catalog): Machine-readable linkset pointing to OpenAPI specifications and service endpoints.
+- [OpenAPI Specification](https://urbancraftgifts.com/.well-known/openapi.json): Complete OpenAPI 3.1 schema for corporate gifting quotation APIs.
+- [Model Context Protocol Server](https://urbancraftgifts.com/.well-known/mcp/server-card.json): SEP-1649 MCP server card exposing search and quote tools.
+- [Corporate Gifting Agent Skill](https://urbancraftgifts.com/.well-known/agent-skills/corporate-gifting/SKILL.md): Comprehensive agent skill documentation for enterprise consulting.
+- [Agent Authentication Guide](https://urbancraftgifts.com/auth.md): Agent authentication, registration, rate limits, and verification instructions.
+
+## Company Information
+
+- [About Urban Craft & Co.](https://urbancraftgifts.com/about): Business heritage, Delhi workshop, and artisan manufacturing capabilities.
+- [Corporate Services](https://urbancraftgifts.com/services): Custom branding, laser engraving, UV printing, bulk logistics, and pan-India dropshipping.
+- [Client Testimonials](https://urbancraftgifts.com/testimonials): Verified feedback from enterprise clients and HR leaders.
+- [Frequently Asked Questions](https://urbancraftgifts.com/faqs): Answers regarding minimum order quantities, delivery timelines, and logo mockups.
+- [Terms & Conditions](https://urbancraftgifts.com/terms): Commercial order terms, sample policies, and cancellation guidelines.
+- [Privacy Policy](https://urbancraftgifts.com/privacy-policy): Customer data protection and communications policy.
+
+## Optional
+
+- [Full LLM Context (llms-full.txt)](https://urbancraftgifts.com/llms-full.txt): Complete unabridged corporate catalogue text for deep retrieval and prompt injection.
