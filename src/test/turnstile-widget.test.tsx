@@ -69,7 +69,6 @@ describe("TurnstileWidget", () => {
     });
 
     expect(onVerify1).toHaveBeenCalledWith("dummy-token");
-    expect(screen.getByText("Security verification completed")).toBeInTheDocument();
 
     unmount1();
     expect(removeMock).toHaveBeenCalledWith("widget-abc");

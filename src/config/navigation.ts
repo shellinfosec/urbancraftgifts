@@ -44,5 +44,7 @@ export const COMPANY_LINKS = [
 export const LEGAL_LINKS = [
   { to: "/terms", label: "Terms & Conditions" },
   { to: "/privacy-policy", label: "Privacy Policy" },
+  { to: "/shipping-policy", label: "Shipping & Delivery" },
+  { to: "/cancellation-returns", label: "Cancellation & Returns" },
   { to: "/cookie-policy", label: "Cookie Policy" },
 ] as const;

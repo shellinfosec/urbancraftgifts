@@ -19,6 +19,8 @@ const staticRoutes = [
   "/faqs",
   "/terms",
   "/privacy-policy",
+  "/shipping-policy",
+  "/cancellation-returns",
   "/cookie-policy",
   "/categories",
   "/favorites",

@@ -38,6 +38,8 @@ export default defineConfig(async ({ command }) => {
               "/faqs",
               "/terms",
               "/privacy-policy",
+              "/shipping-policy",
+              "/cancellation-returns",
               "/cookie-policy",
               "/categories",
               "/favorites",

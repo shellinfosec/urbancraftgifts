@@ -13,6 +13,8 @@ const STATIC = [
   "/faqs",
   "/terms",
   "/privacy-policy",
+  "/shipping-policy",
+  "/cancellation-returns",
   "/cookie-policy",
 ];
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ShieldCheck, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 declare global {
   interface Window {
@@ -261,12 +261,6 @@ export const TurnstileWidget = React.memo(function TurnstileWidget({
   return (
     <div className={`turnstile-container py-1 ${className}`}>
       <div ref={containerRef} className="min-h-[65px] flex items-center justify-start" />
-      {verified && (
-        <p className="mt-1 flex items-center gap-1.5 text-[0.75rem] text-emerald-700">
-          <ShieldCheck className="size-3.5" />
-          <span>Security verification completed</span>
-        </p>
-      )}
       {errorMessage && (
         <p className="mt-1 flex items-center gap-1.5 text-[0.75rem] text-amber-700">
           <AlertCircle className="size-3.5" />

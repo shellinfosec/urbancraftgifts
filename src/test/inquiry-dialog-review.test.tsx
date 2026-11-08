@@ -67,7 +67,7 @@ describe("InquiryDialog Review step & auto-submit guard", () => {
 
     // Verify Review step (Step 4) is displayed
     expect(await screen.findByText(/Step 5 of 5: Review & Confirm/i)).toBeInTheDocument();
-    expect(screen.getByText(/Security Verification/i)).toBeInTheDocument();
+    expect(screen.getByText(/Enquiry Summary/i)).toBeInTheDocument();
 
     // CRITICAL ASSERTION: Entering the Review step MUST NOT automatically submit!
     expect(submitSpy).not.toHaveBeenCalled();
