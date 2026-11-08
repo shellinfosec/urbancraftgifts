@@ -1,18 +1,22 @@
-import { useEffect, useRef, useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { ShieldCheck, AlertCircle } from "lucide-react";
 
 declare global {
   interface Window {
     turnstile?: {
+      ready: (fn: () => void) => void;
       render: (
         container: HTMLElement | string,
         params: {
           sitekey: string;
+          action?: string;
           callback?: (token: string) => void;
           "error-callback"?: (errorCode?: string) => void;
           "expired-callback"?: () => void;
           theme?: "light" | "dark" | "auto";
           size?: "normal" | "compact" | "flexible";
+          retry?: "auto" | "never";
+          "retry-interval"?: number;
         },
       ) => string;
       reset: (widgetId: string) => void;
@@ -24,14 +28,19 @@ declare global {
 
 interface TurnstileWidgetProps {
   siteKey?: string;
+  action?: string;
   onVerify: (token: string) => void;
   onExpire?: () => void;
   onError?: (err?: string) => void;
   className?: string;
 }
 
-export function TurnstileWidget({
-  siteKey = import.meta.env["VITE_TURNSTILE_SITE_KEY"] || "0x4AAAAAAF4N2BizrqzpRRny",
+const PRODUCTION_SITE_KEY = "0x4AAAAAAF4N2BizrqzpRRny";
+const CLOUDFLARE_ALWAYS_PASS_TEST_KEY = "1x00000000000000000000AA";
+
+export const TurnstileWidget = React.memo(function TurnstileWidget({
+  siteKey,
+  action = "inquiry",
   onVerify,
   onExpire,
   onError,
@@ -39,10 +48,11 @@ export function TurnstileWidget({
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
+  const renderedRef = useRef(false);
   const [verified, setVerified] = useState(false);
-  const verifiedRef = useRef(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Keep callback references stable across parent re-renders to prevent widget destruction
+  // Stable references for callbacks to avoid re-triggering effects
   const onVerifyRef = useRef(onVerify);
   onVerifyRef.current = onVerify;
 
@@ -52,104 +62,128 @@ export function TurnstileWidget({
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
+  // Determine site key: use test key on localhost/dev to prevent domain-mismatch loops
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname === "::1");
+
+  const effectiveSiteKey =
+    siteKey ||
+    (isLocalhost
+      ? CLOUDFLARE_ALWAYS_PASS_TEST_KEY
+      : import.meta.env["VITE_TURNSTILE_SITE_KEY"] || PRODUCTION_SITE_KEY);
+
   useEffect(() => {
-    // If no sitekey provided or local development bypass active
-    if (!siteKey) {
-      verifiedRef.current = true;
+    let isMounted = true;
+
+    // Local dummy bypass if no key is configured
+    if (!effectiveSiteKey) {
       setVerified(true);
       onVerifyRef.current("cf_dev_dummy_token");
       return;
     }
 
-    let isMounted = true;
-
-    const renderWidget = () => {
-      if (!isMounted || !containerRef.current || !window.turnstile) return;
-      if (widgetIdRef.current) {
-        try {
-          window.turnstile.remove(widgetIdRef.current);
-        } catch {
-          // ignore removal error on re-render
-        }
-      }
+    const initWidget = () => {
+      if (!isMounted || !containerRef.current || renderedRef.current) return;
+      if (!window.turnstile || typeof window.turnstile.render !== "function") return;
 
       try {
+        // Clear container before rendering to prevent duplicate widgets
+        if (containerRef.current) {
+          containerRef.current.innerHTML = "";
+        }
+
         const id = window.turnstile.render(containerRef.current, {
-          sitekey: siteKey,
+          sitekey: effectiveSiteKey,
+          action,
           theme: "light",
+          retry: "never", // Prevents infinite spinning loops on challenge failures
           callback: (token: string) => {
             if (isMounted) {
-              verifiedRef.current = true;
               setVerified(true);
+              setErrorMessage(null);
               onVerifyRef.current(token);
             }
           },
           "expired-callback": () => {
             if (isMounted) {
-              verifiedRef.current = false;
               setVerified(false);
               onExpireRef.current?.();
             }
           },
-          "error-callback": (err?: string) => {
+          "error-callback": (errorCode?: string) => {
             if (isMounted) {
-              // In dev mode or network error, provide fallback test token
-              if (import.meta.env.DEV) {
-                verifiedRef.current = true;
+              console.warn("Cloudflare Turnstile challenge error:", errorCode);
+              // In dev or localhost, auto-pass with test token
+              if (import.meta.env.DEV || isLocalhost) {
                 setVerified(true);
-                onVerifyRef.current("1x00000000000000000000AA");
+                setErrorMessage(null);
+                onVerifyRef.current(CLOUDFLARE_ALWAYS_PASS_TEST_KEY);
               } else {
-                onErrorRef.current?.(err);
+                setErrorMessage(
+                  "Security verification check encountered an issue. You can still reach us directly on WhatsApp or Email.",
+                );
+                onErrorRef.current?.(errorCode);
               }
             }
           },
         });
+
         widgetIdRef.current = id;
+        renderedRef.current = true;
       } catch (err) {
-        console.warn("Turnstile render error:", err);
+        console.warn("Turnstile initialization exception:", err);
       }
     };
 
-    if (window.turnstile) {
-      renderWidget();
-    } else {
-      const scriptId = "cf-turnstile-script";
-      let script = document.getElementById(scriptId) as HTMLScriptElement | null;
-      if (!script) {
-        script = document.createElement("script");
-        script.id = scriptId;
-        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-      }
+    // Ensure Turnstile script is loaded once
+    const scriptId = "cf-turnstile-script";
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
 
-      const checkInterval = setInterval(() => {
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    // Call initWidget via turnstile.ready() if available, or poll safely
+    if (window.turnstile && typeof window.turnstile.ready === "function") {
+      window.turnstile.ready(initWidget);
+    } else {
+      const interval = setInterval(() => {
         if (window.turnstile) {
-          clearInterval(checkInterval);
-          renderWidget();
+          clearInterval(interval);
+          if (typeof window.turnstile.ready === "function") {
+            window.turnstile.ready(initWidget);
+          } else {
+            initWidget();
+          }
         }
       }, 100);
 
-      const timeout = setTimeout(() => {
-        clearInterval(checkInterval);
-        // Fallback for strict offline development
-        if (import.meta.env.DEV && !verifiedRef.current) {
-          verifiedRef.current = true;
+      // Local dev safety fallback timeout
+      const fallbackTimer = setTimeout(() => {
+        clearInterval(interval);
+        if ((import.meta.env.DEV || isLocalhost) && !renderedRef.current) {
           setVerified(true);
-          onVerifyRef.current("1x00000000000000000000AA");
+          onVerifyRef.current(CLOUDFLARE_ALWAYS_PASS_TEST_KEY);
         }
-      }, 4000);
+      }, 3500);
 
       return () => {
         isMounted = false;
-        clearInterval(checkInterval);
-        clearTimeout(timeout);
+        clearInterval(interval);
+        clearTimeout(fallbackTimer);
         if (widgetIdRef.current && window.turnstile) {
           try {
             window.turnstile.remove(widgetIdRef.current);
           } catch {
-            // ignore unmount cleanup error
+            // ignore cleanup errors
           }
         }
       };
@@ -161,11 +195,11 @@ export function TurnstileWidget({
         try {
           window.turnstile.remove(widgetIdRef.current);
         } catch {
-          // ignore unmount cleanup error
+          // ignore cleanup errors
         }
       }
     };
-  }, [siteKey]);
+  }, [effectiveSiteKey, action, isLocalhost]);
 
   return (
     <div className={`turnstile-container py-1 ${className}`}>
@@ -176,6 +210,12 @@ export function TurnstileWidget({
           <span>Security verification completed</span>
         </p>
       )}
+      {errorMessage && (
+        <p className="mt-1 flex items-center gap-1.5 text-[0.75rem] text-amber-700">
+          <AlertCircle className="size-3.5" />
+          <span>{errorMessage}</span>
+        </p>
+      )}
     </div>
   );
-}
+});

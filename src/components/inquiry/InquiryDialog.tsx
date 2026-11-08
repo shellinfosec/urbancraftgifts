@@ -479,12 +479,36 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
                     <div className="grid gap-4 sm:grid-cols-2">
                       {(
                         [
-                          ["name", "Your name", "text", "name"],
-                          ["company", "Company (optional)", "text", "organization"],
-                          ["email", "Work email", "email", "email"],
-                          ["phone", "Phone / WhatsApp", "tel", "tel"],
+                          [
+                            "name",
+                            "Your name",
+                            "text",
+                            "name",
+                            "Client contact person's full name",
+                          ],
+                          [
+                            "company",
+                            "Company (optional)",
+                            "text",
+                            "organization",
+                            "Enterprise, corporate, or organization name",
+                          ],
+                          [
+                            "email",
+                            "Work email",
+                            "email",
+                            "email",
+                            "Work email address for quote delivery",
+                          ],
+                          [
+                            "phone",
+                            "Phone / WhatsApp",
+                            "tel",
+                            "tel",
+                            "Phone or WhatsApp number for coordination",
+                          ],
                         ] as const
-                      ).map(([k, label, type, ac]) => (
+                      ).map(([k, label, type, ac, desc]) => (
                         <div key={k}>
                           <Label htmlFor={`inq-${k}`}>{label}</Label>
                           <Input
@@ -492,6 +516,7 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
                             type={type}
                             autoComplete={ac}
                             className="mt-1.5 h-11"
+                            toolparamdescription={desc}
                             aria-invalid={!!errors[k]}
                             aria-describedby={errors[k] ? `inq-${k}-err` : undefined}
                             {...register(k)}
@@ -521,6 +546,7 @@ export default function InquiryDialog({ open, onOpenChange, prefill, prefillKey 
                           rows={3}
                           className="mt-1.5"
                           placeholder="Budget range, packaging preferences, a reference product…"
+                          toolparamdescription="Additional project details, custom branding requirements, packaging notes"
                           {...register("notes")}
                         />
                       </div>

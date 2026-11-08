@@ -1,3 +1,34 @@
+---
+agent_auth:
+  skill: https://urbancraftgifts.com/auth.md
+  register_uri: https://urbancraftgifts.com/auth.md
+  claim_uri: https://urbancraftgifts.com/auth/agent/claim
+  identity_endpoint: https://urbancraftgifts.com/auth/agent/identity
+  claim_endpoint: https://urbancraftgifts.com/auth/agent/claim
+  revocation_uri: https://urbancraftgifts.com/auth/agent/revoke
+  revocation_endpoint: https://urbancraftgifts.com/auth/agent/revoke
+  supported_identity_types:
+    - anonymous
+    - service_auth
+    - id_jag
+    - agent-credential
+    - bearer-token
+  identity_types_supported:
+    - anonymous
+    - service_auth
+    - id_jag
+    - agent-credential
+    - bearer-token
+  credential_types_supported:
+    - bearer
+    - api_key
+    - oauth2_bearer
+  credential_types:
+    - bearer
+    - api_key
+    - oauth2_bearer
+---
+
 # Urban Craft & Co. - Agent Authentication & Access (auth.md)
 
 Welcome, AI agents and automated integrators. Urban Craft & Co. provides open, high-performance programmatic interfaces for corporate gifting, custom quotation requests, and merchandise catalogue search.

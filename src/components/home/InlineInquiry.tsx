@@ -215,6 +215,7 @@ export function InlineInquiry({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     aria-invalid={touched && name.trim().length < 2}
+                    toolparamdescription="Your full name or corporate contact person"
                   />
                 </div>
                 <div>
@@ -226,6 +227,7 @@ export function InlineInquiry({
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
                     aria-invalid={touched && contact.trim().length < 5}
+                    toolparamdescription="Your corporate email or phone / WhatsApp number"
                   />
                 </div>
               </div>
@@ -238,6 +240,7 @@ export function InlineInquiry({
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                   className="mt-2 h-12 w-full rounded-md border border-input bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
+                  toolparamdescription="Approximate order quantity range"
                 >
                   <option value="">Not sure yet</option>
                   {QUANTITY_RANGES.map((q) => (
@@ -257,6 +260,7 @@ export function InlineInquiry({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   aria-invalid={touched && message.trim().length < 5}
+                  toolparamdescription="Brief description of gifting requirements, logo customization, or timeline"
                 />
               </div>
               <div className="pt-1">

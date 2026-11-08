@@ -136,7 +136,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         type: "application/json",
       },
     ],
-    scripts: [localBusinessJsonLd(), organizationJsonLd(), websiteJsonLd()],
+    scripts: [
+      localBusinessJsonLd(),
+      organizationJsonLd(),
+      websiteJsonLd(),
+      {
+        children: `(function(){try{function r(mc){if(!mc||typeof mc.registerTool!=="function")return;mc.registerTool({name:"search_catalogue",description:"Search corporate gifting collections across 16 categories, keywords, and specifications.",inputSchema:{type:"object",properties:{query:{type:"string",description:"Search keyword"},category:{type:"string",description:"Category slug"}}},execute:function(p){var q=(p&&p.query)?encodeURIComponent(p.query):"";window.location.href="/catalogue?q="+q;return Promise.resolve({status:"redirecting",query:q});}});mc.registerTool({name:"get_business_info",description:"Retrieve Urban Craft & Co. verified business contact details, address, and operational hours.",inputSchema:{type:"object",properties:{}},execute:function(){return Promise.resolve({name:"Urban Craft & Co.",phone:"+91 92661 29456",email:"info@urbancraftgifts.com",address:"Ground Floor, 724, Shivaji Rd, Azad Market, Sadar Bazar, New Delhi 110006, India",website:"https://urbancraftgifts.com"});}});mc.registerTool({name:"submit_inquiry",description:"Submit corporate bulk gifting inquiries, required quantities, and target delivery dates.",inputSchema:{type:"object",required:["name","email","phone"],properties:{name:{type:"string",description:"Client contact name"},email:{type:"string",description:"Work email address"},phone:{type:"string",description:"Phone / WhatsApp number"},quantity:{type:"string",description:"Estimated order quantity"},date:{type:"string",description:"Target delivery date in YYYY-MM-DD format"},notes:{type:"string",description:"Gifting requirements, logo customization details"}}},execute:function(p){return fetch("/api/contact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)}).then(function(res){return res.json();});}});}if(typeof document!=="undefined"){if(!document.modelContext&&typeof window!=="undefined"&&window.modelContext){document.modelContext=window.modelContext;}if(!document.modelContext){var t=new Map();document.modelContext={registerTool:function(tool,opts){t.set(tool.name,tool);if(opts&&opts.signal){opts.signal.addEventListener("abort",function(){t.delete(tool.name);});}return Promise.resolve();},unregisterTool:function(n){t.delete(n);return Promise.resolve();},tools:t,listTools:function(){return Array.from(t.values());}};if(typeof window!=="undefined")window.modelContext=document.modelContext;}r(document.modelContext);}}catch(e){console.warn("WebMCP init:",e);}})();`,
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -149,11 +156,6 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en-IN">
       <head>
         <HeadContent />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{window.modelContext=window.modelContext||document.modelContext;if(!window.modelContext){var r=new Map(),ctx={registerTool:function(t){r.set(t.name,t);return Promise.resolve();},unregisterTool:function(n){r.delete(n);return Promise.resolve();},tools:r,listTools:function(){return Array.from(r.values());}};document.modelContext=ctx;window.modelContext=ctx;}var mc=document.modelContext;if(mc&&mc.registerTool){mc.registerTool({name:"search_catalogue",description:"Search corporate gifting collections across 16 categories, keywords, and specifications.",inputSchema:{type:"object",properties:{query:{type:"string",description:"Search keyword"},category:{type:"string",description:"Category slug"}}},execute:function(p){window.location.href="/catalogue?q="+(p&&p.query?p.query:"");return Promise.resolve({status:"redirecting"});}});mc.registerTool({name:"get_business_info",description:"Retrieve Urban Craft & Co. verified business contact details, address, and operational hours.",inputSchema:{type:"object",properties:{}},execute:function(){return Promise.resolve({name:"Urban Craft & Co.",phone:"+91 93117 76391",email:"notifications@urbancraftgifts.com",city:"New Delhi",country:"India"});}});mc.registerTool({name:"submit_inquiry",description:"Submit corporate bulk gifting inquiries, required quantities, and target delivery dates.",inputSchema:{type:"object",required:["name","email","phone","date"],properties:{name:{type:"string"},email:{type:"string"},phone:{type:"string"},date:{type:"string",description:"YYYY-MM-DD target date in the future"}}},execute:function(p){return fetch("/api/contact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)}).then(function(r){return r.json();});}});}}catch(e){}})();`,
-          }}
-        />
       </head>
       <body>
         {children}

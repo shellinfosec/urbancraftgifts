@@ -11,7 +11,8 @@
       "params": {
         "alpn": "h2,h3",
         "port": 443,
-        "path": "/.well-known/ai-catalog.json"
+        "endpoint": "/.well-known/ard.json",
+        "path": "/.well-known/ard.json"
       }
     },
     {
@@ -22,13 +23,14 @@
       "params": {
         "alpn": "h2,h3",
         "port": 443,
+        "endpoint": "/.well-known/mcp/server-card.json",
         "path": "/.well-known/mcp/server-card.json"
       }
     },
     {
       "name": "_agents.urbancraftgifts.com",
       "type": "TXT",
-      "value": "v=dnsaid1; ard=https://urbancraftgifts.com/.well-known/ai-catalog.json; skills=https://urbancraftgifts.com/.well-known/agent-skills/index.json; mcp=https://urbancraftgifts.com/.well-known/mcp/server-card.json"
+      "value": "v=dnsaid1; ard=https://urbancraftgifts.com/.well-known/ard.json; skills=https://urbancraftgifts.com/.well-known/agent-skills/index.json; mcp=https://urbancraftgifts.com/.well-known/mcp/server-card.json"
     }
   ]
 }

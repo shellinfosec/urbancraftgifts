@@ -42,3 +42,4 @@
 ## Optional
 
 - [Full LLM Context (llms-full.txt)](https://urbancraftgifts.com/llms-full.txt): Complete unabridged corporate catalogue text for deep retrieval and prompt injection.
+

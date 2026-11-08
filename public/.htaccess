@@ -25,6 +25,11 @@
   RewriteCond %{DOCUMENT_ROOT}/$1.md -f
   RewriteRule ^(.*)$ $1.md [L]
 
+  # Universal Markdown Fallback for any other page requesting text/markdown (excluding /api)
+  RewriteCond %{HTTP:Accept} text/markdown [NC]
+  RewriteCond %{REQUEST_URI} !^/api [NC]
+  RewriteRule ^ index.md [L]
+
   # ----------------------------------------------------------------------------
   # 2. Exclude Backend API Routes (Proxies to Node / Passenger runtime)
   # ----------------------------------------------------------------------------
