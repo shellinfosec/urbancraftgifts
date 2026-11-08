@@ -15,6 +15,12 @@
   RewriteCond %{REQUEST_URI} ^/api [NC]
   RewriteRule ^ - [L]
 
+  # Prevent Apache from rewriting missing static assets or Vite dev URLs to index.html (which causes MIME type errors)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_URI} \.(js|mjs|cjs|css|png|jpg|jpeg|gif|webp|svg|woff|woff2|ttf|eot|ico|json|xml|pdf|map)$ [NC,OR]
+  RewriteCond %{REQUEST_URI} ^/@ [NC]
+  RewriteRule ^ - [R=404,L]
+
   # Markdown for Agents content negotiation (requests with Accept: text/markdown)
   RewriteCond %{HTTP:Accept} text/markdown [NC]
   RewriteCond %{REQUEST_URI} ^/?$

@@ -48,6 +48,39 @@ const allRoutes = [...staticRoutes, ...categorySlugs.map((slug) => `/categories/
 async function run() {
   console.log("🚀 Starting local Nitro/TanStack server for static SPA prerendering...");
 
+  // Step 1: Ensure real TanStack Start production manifest is loaded by Nitro
+  const serverDir = path.resolve(rootDir, ".output/server");
+  if (fs.existsSync(serverDir)) {
+    const manifestFiles = fs
+      .readdirSync(serverDir)
+      .filter((f) => f.startsWith("_tanstack-start-manifest_v-") && f.endsWith(".mjs"));
+    if (manifestFiles.length > 0) {
+      const realManifestSource = path.join(serverDir, manifestFiles[0]);
+      const dummyManifestTarget = path.join(serverDir, "_tanstack-start-manifest_v.mjs");
+      fs.copyFileSync(realManifestSource, dummyManifestTarget);
+      console.log(
+        `  ✓ Patched TanStack Start manifest: ${manifestFiles[0]} -> _tanstack-start-manifest_v.mjs`,
+      );
+    } else {
+      console.warn(
+        "  ⚠️ Warning: No hashed _tanstack-start-manifest_v-*.mjs found in .output/server",
+      );
+    }
+  }
+
+  // Find the production client entry script in .output/public/assets
+  let clientEntryScript = null;
+  const assetsDir = path.resolve(rootDir, ".output/public/assets");
+  if (fs.existsSync(assetsDir)) {
+    const entryFiles = fs
+      .readdirSync(assetsDir)
+      .filter((f) => f.startsWith("index-") && f.endsWith(".js"));
+    if (entryFiles.length > 0) {
+      clientEntryScript = `/assets/${entryFiles[0]}`;
+      console.log(`  ✓ Detected production client entry script: ${clientEntryScript}`);
+    }
+  }
+
   // Set fixed port for prerendering
   process.env.PORT = "3099";
   process.env.NITRO_PORT = "3099";
@@ -86,7 +119,29 @@ async function run() {
         console.error(`❌ Failed to fetch ${route} (status: ${res.status})`);
         continue;
       }
-      const html = await res.text();
+      let html = await res.text();
+
+      // Guard: replace any virtual dev client entry that could have leaked
+      if (html.includes("virtual:tanstack-start-dev-client-entry")) {
+        console.warn(
+          `  ⚠️ Found virtual dev script in route ${route}, replacing with production bundle...`,
+        );
+        if (clientEntryScript) {
+          html = html.replace(
+            /(["'])\/@id\/virtual:tanstack-start-dev-client-entry(["'])/g,
+            `$1${clientEntryScript}$2`,
+          );
+          html = html.replace(
+            /(["'])virtual:tanstack-start-dev-client-entry(["'])/g,
+            `$1${clientEntryScript}$2`,
+          );
+        }
+      }
+
+      // Assert zero virtual dev script references
+      if (html.includes("virtual:tanstack-start-dev-client-entry")) {
+        throw new Error(`Fatal Error: Route ${route} contains virtual dev client entry!`);
+      }
 
       if (route === "/") {
         fs.writeFileSync(path.join(distDir, "index.html"), html, "utf-8");
@@ -104,6 +159,7 @@ async function run() {
       }
     } catch (err) {
       console.error(`❌ Error rendering route ${route}:`, err);
+      process.exit(1);
     }
   }
 

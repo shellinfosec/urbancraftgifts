@@ -352,6 +352,9 @@ npm run build
 - **Frontend Deployment**: Pre-compiled Static SPA on Apache (`dist/` folder deployed to `/home/urbancraftgifts/public_html`).
 - **Backend API Deployment**: Node.js Express server running under Phusion Passenger on cPanel (`/home/urbancraftgifts/urbancraftgifts-api`), bootstrapped via `cpanel-start.cjs` with dynamic port allocation (no static port conflict).
 - **Prerender Pipeline**: `npm run build` executes `vite build` followed by `scripts/prerender-spa.mjs`, prerendering all 29 static routes into `dist/` along with `.htaccess`, all asset bundles, and agent discovery files.
+- **Client Script Bundling & MIME Protection**:
+  - `scripts/prerender-spa.mjs` automatically synchronizes the real TanStack Start production manifest (`_tanstack-start-manifest_v-*.mjs` -> `_tanstack-start-manifest_v.mjs`) before prerendering, ensuring `<script type="module" src="/assets/index-*.js">` points to the hashed production bundle and eliminating the virtual dev client entry.
+  - Apache `.htaccess` contains an explicit rewrite block returning genuine 404 status codes for missing static assets (`.(js|mjs|css|png|...)`) or `/@...` dev endpoints, preventing Apache from rewriting missing scripts to `index.html` (which produces strict MIME type mismatch errors).
 - **cPanel Deployment Manifest (`.cpanel.yml`)**:
   - Initializes directories (`public_html`, `urbancraftgifts-api`, `data`, `logs`, `tmp`, `backups`).
   - Safely backs up active runtime lead data before deployment: `cp -rn data/. backups/data-latest/`.
